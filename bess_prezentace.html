@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cenová nabídka BESS — Bateriové úložiště BRES-2400-1250</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    /* Paleta z PDF nabídky */
+    --bg-page: #F4F1E8;        /* krémové pozadí jako v PDF */
+    --bg-light: #F9F7EF;
+    --paper: #FFFFFF;
+    --primary: #1F4A2E;        /* hlavní tmavá zelená */
+    --primary-dark: #0F2D1B;
+    --primary-light: #2D6A41;
+    --accent: #6FA86C;
+    --accent-soft: #D9E8D5;
+    --green-bg: #1F4A2E;
+    --green-bg-dark: #163821;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --border: #E5E0D0;
+    --border-soft: #EFEAD8;
+    --positive: #2D6A41;
+    --negative: #C42E2E;
+    --amber: #D4A93C;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg-page);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  a { color: var(--primary); }
+
+  /* ============ STRÁNKOVÝ SYSTÉM ============ */
+  /* Každá "stránka" simuluje stránku PDF — bílý arch s číslem stránky */
+  .page {
+    max-width: 1280px;
+    margin: 24px auto;
+    background: var(--paper);
+    border-radius: 12px;
+    box-shadow: 0 2px 24px rgba(15, 45, 27, 0.08);
+    padding: 56px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header {
+    position: absolute;
+    top: 24px; left: 64px; right: 64px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .page-footer {
+    position: absolute;
+    bottom: 24px; left: 64px; right: 64px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-soft);
+  }
+  .page-footer .page-num {
+    color: var(--primary); font-weight: 700;
+  }
+  .page-body {
+    margin-top: 48px;
+    margin-bottom: 40px;
+  }
+  @media (max-width: 768px) {
+    .page { padding: 80px 24px 64px; margin: 12px; }
+    .page-header, .page-footer { left: 24px; right: 24px; }
+  }
+
+  /* ============ EYEBROW (jako "MODEL BRES..." v PDF) ============ */
+  .eyebrow-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent-soft);
+    color: var(--primary);
+    padding: 6px 14px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  }
+  .eyebrow-pill::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--primary);
+  }
+  .eyebrow-label {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 700; color: var(--primary);
+    margin-bottom: 16px;
+  }
+
+  /* ============ TYPOGRAFIE ============ */
+  h1.display {
+    font-weight: 800; font-size: clamp(40px, 5.5vw, 64px);
+    line-height: 1.0; letter-spacing: -0.035em;
+    margin: 0 0 16px;
+  }
+  h1.display em {
+    font-style: normal; color: var(--primary);
+  }
+  h2.display {
+    font-weight: 800; font-size: clamp(28px, 3.5vw, 40px);
+    line-height: 1.05; letter-spacing: -0.025em;
+    margin: 0 0 16px;
+  }
+  h2.display em {
+    font-style: normal; color: var(--primary);
+  }
+  h3.display {
+    font-weight: 800; font-size: 24px;
+    line-height: 1.1; letter-spacing: -0.02em;
+    margin: 0 0 12px;
+  }
+  .lead {
+    font-size: 17px; color: var(--text-muted);
+    line-height: 1.55; max-width: 640px;
+    margin: 0 0 32px;
+  }
+
+  /* ============ STR 01 — HERO (Cenová nabídka) ============ */
+  .hero-page { min-height: 720px; }
+  .hero-grid {
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center;
+  }
+  @media (max-width: 980px) { .hero-grid { grid-template-columns: 1fr; } }
+  .hero-stats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; margin-top: 32px;
+  }
+  .hero-stat {
+    background: var(--bg-light);
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .hero-stat-value {
+    font-size: 28px; font-weight: 800; color: var(--primary);
+    letter-spacing: -0.025em; line-height: 1;
+  }
+  .hero-stat-value sup {
+    font-size: 14px; font-weight: 700; opacity: 0.7;
+    margin-left: 2px; vertical-align: super;
+  }
+  .hero-stat-label {
+    font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600; margin-top: 8px;
+  }
+  .hero-illustration {
+    background: linear-gradient(135deg, #ECF2EA 0%, #DDE9DA 100%);
+    border-radius: 16px; padding: 32px;
+    min-height: 360px;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-illustration::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(31,74,46,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31,74,46,0.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  .container-svg {
+    position: relative; z-index: 1; width: 100%;
+  }
+  .hero-meta {
+    display: flex; gap: 16px;
+    padding-top: 24px; margin-top: 32px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+  .hero-meta-item { font-size: 13px; color: var(--text-muted); }
+  .hero-meta-item strong { color: var(--text); font-weight: 600; }
+
+  /* ============ STR 02 — IDENTIFIKACE ============ */
+  .id-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px; margin-bottom: 24px;
+  }
+  @media (max-width: 768px) { .id-grid { grid-template-columns: 1fr 1fr; } }
+  .id-cell {
+    background: var(--bg-light); border: 1px solid var(--border-soft);
+    padding: 14px 18px; border-radius: 10px;
+  }
+  .id-cell-label {
+    font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600; margin-bottom: 4px;
+  }
+  .id-cell-value { font-size: 15px; font-weight: 700; color: var(--text); }
+  .parties-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+  }
+  @media (max-width: 768px) { .parties-grid { grid-template-columns: 1fr; } }
+  .party {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .party.supplier { background: white; }
+  .party.customer { background: var(--primary); color: white; }
+  .party-label {
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 600; opacity: 0.7; margin-bottom: 6px;
+  }
+  .party-name { font-size: 19px; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.015em; }
+  .party-detail { font-size: 13px; line-height: 1.8; }
+  .party-detail strong { font-weight: 600; min-width: 60px; display: inline-block; opacity: 0.9; }
+
+  /* ============ SCOPE OF DELIVERY ============ */
+  .scope-card {
+    background: var(--primary); color: white;
+    border-radius: 14px; padding: 28px 32px;
+  }
+  .scope-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 16px; font-weight: 700; margin-bottom: 18px;
+  }
+  .scope-title::before {
+    content: '✓'; display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; background: var(--accent); color: var(--primary-dark);
+    border-radius: 6px; font-weight: 800;
+  }
+  .scope-list {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 24px;
+  }
+  @media (max-width: 768px) { .scope-list { grid-template-columns: 1fr; } }
+  .scope-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13.5px; padding: 6px 0;
+  }
+  .scope-item::before {
+    content: '✓';
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 4px;
+    background: var(--accent); color: var(--primary-dark);
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+  }
+  .scope-note {
+    font-size: 11px; opacity: 0.7; margin-top: 18px;
+    padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.15);
+    font-style: italic;
+  }
+
+  /* ============ BENEFITS (str 03) ============ */
+  .benefit-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  @media (max-width: 768px) { .benefit-grid { grid-template-columns: 1fr; } }
+  .benefit-item {
+    background: var(--bg-light); border: 1px solid var(--border-soft);
+    border-radius: 14px; padding: 28px;
+    border-left: 4px solid var(--primary);
+    position: relative;
+  }
+  .benefit-num-label {
+    font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--primary); font-weight: 700; margin-bottom: 14px;
+  }
+  .benefit-name {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.02em;
+    margin: 0 0 10px; color: var(--text);
+  }
+  .benefit-desc {
+    font-size: 14px; color: var(--text-muted); line-height: 1.6;
+    margin: 0 0 18px;
+  }
+  .benefit-tag {
+    display: inline-block;
+    background: var(--primary); color: white;
+    padding: 6px 12px; border-radius: 6px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .benefit-source {
+    font-size: 11px; color: var(--text-muted);
+    margin-top: 14px; line-height: 1.5;
+  }
+  .benefit-source a {
+    color: var(--primary); border-bottom: 1px dotted var(--primary); text-decoration: none;
+  }
+
+  /* ============ KALKULAČKA (str 04) ============ */
+  .calc-grid {
+    display: grid; grid-template-columns: 440px 1fr; gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 1024px) { .calc-grid { grid-template-columns: 1fr; } }
+  .calc-card {
+    background: var(--bg-light); border-radius: 12px; padding: 20px 22px;
+    border: 1px solid var(--border-soft);
+    margin-bottom: 14px;
+    border-left: 4px solid var(--primary);
+  }
+  .calc-card-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; gap: 12px;
+  }
+  .calc-card h3 {
+    margin: 0; font-size: 12px; font-weight: 700; color: var(--primary);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .calc-badge {
+    background: var(--accent-soft); color: var(--primary);
+    padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    white-space: nowrap; font-variant-numeric: tabular-nums;
+  }
+  .slider-block { margin-bottom: 14px; }
+  .slider-label-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .slider-label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .slider-value {
+    font-size: 13px; font-weight: 700; color: var(--primary);
+    background: white; padding: 2px 9px; border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+    border: 1px solid var(--border-soft);
+  }
+  input[type="range"] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+  .slider-help { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+  .slider-help em { font-style: italic; }
+  input[type="number"] {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; font-family: inherit; background: white;
+  }
+  .num-row { display: flex; gap: 8px; align-items: center; }
+  .num-row span { font-size: 12px; color: var(--text-muted); }
+  .preset-row { margin-bottom: 12px; }
+  .preset-btn {
+    padding: 5px 11px; font-size: 11px; font-weight: 600;
+    background: transparent; color: var(--primary);
+    border: 1.5px solid var(--primary); border-radius: 16px;
+    cursor: pointer; margin-right: 5px; margin-bottom: 5px;
+    transition: all 0.15s; font-family: inherit;
+  }
+  .preset-btn.active { background: var(--primary); color: white; }
+  .calc-divider { height: 1px; background: var(--border-soft); margin: 14px 0; }
+
+  /* ============ RESULT PANELS (str 04 vpravo) ============ */
+  .panel {
+    background: white; border-radius: 14px; padding: 24px 26px;
+    margin-bottom: 14px; border: 1px solid var(--border-soft);
+  }
+  .panel h3 {
+    margin: 0 0 4px; font-size: 18px; font-weight: 800;
+    color: var(--primary-dark); letter-spacing: -0.015em;
+  }
+  .panel-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 16px; }
+
+  .breakdown-row { margin-bottom: 11px; }
+  .breakdown-label {
+    display: flex; justify-content: space-between;
+    font-size: 13px; margin-bottom: 4px;
+  }
+  .breakdown-name { font-weight: 600; }
+  .breakdown-value { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .breakdown-pct { color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+  .breakdown-bar { height: 8px; background: var(--bg-light); border-radius: 4px; overflow: hidden; }
+  .breakdown-bar-fill { height: 100%; transition: width 0.4s; }
+  .color-dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; margin-right: 8px; vertical-align: middle;
+  }
+
+  table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  thead tr { background: var(--bg-light); color: var(--primary); }
+  th { padding: 9px 6px; text-align: right; font-weight: 700; }
+  th:first-child { text-align: left; }
+  td { padding: 7px 6px; text-align: right; font-variant-numeric: tabular-nums; }
+  td:first-child { text-align: left; font-weight: 600; }
+  tbody tr { border-bottom: 1px solid var(--border-soft); }
+
+  .warning-box {
+    background: #FFF4E5; border: 1px solid var(--amber);
+    padding: 10px 12px; border-radius: 6px;
+    font-size: 11px; color: #8B6B1F; margin-top: 8px;
+  }
+
+  /* ============ RESULT HERO (velký výsledek) ============ */
+  .result-hero {
+    background: var(--primary); color: white;
+    border-radius: 16px; padding: 36px 40px;
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .result-hero::before {
+    content: ''; position: absolute;
+    top: -50%; right: -10%; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(111,168,108,0.15), transparent 60%);
+    pointer-events: none;
+  }
+  .result-hero > * { position: relative; z-index: 1; }
+  .result-hero-label {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 12px;
+  }
+  .result-hero-value {
+    font-size: clamp(56px, 8vw, 88px); font-weight: 900;
+    line-height: 1; letter-spacing: -0.035em; margin: 0;
+    color: white;
+  }
+  .result-hero-cf {
+    font-size: 15px; color: rgba(255,255,255,0.8); margin: 16px 0 0;
+    line-height: 1.5;
+  }
+  .result-hero-cf strong { color: var(--accent); font-weight: 700; }
+  .result-hero-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    margin-top: 28px; padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+  }
+  @media (max-width: 600px) { .result-hero-grid { grid-template-columns: 1fr; gap: 14px; } }
+  .result-hero-grid-label {
+    font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    opacity: 0.6; font-weight: 600; margin-bottom: 6px;
+  }
+  .result-hero-grid-value {
+    font-size: 24px; font-weight: 800; line-height: 1; letter-spacing: -0.02em;
+  }
+  .result-hero-grid-sub {
+    font-size: 11px; opacity: 0.6; margin-top: 4px;
+  }
+  .status-line {
+    margin-top: 18px; padding: 10px 14px;
+    background: rgba(255,255,255,0.08); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.12);
+    font-size: 12.5px; display: flex; align-items: center; gap: 10px;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-good { color: var(--accent); }
+  .status-good .status-dot { background: var(--accent); }
+  .status-warning { color: #F4D03F; }
+  .status-warning .status-dot { background: #F4D03F; }
+  .status-bad { color: #FF6B6B; }
+  .status-bad .status-dot { background: #FF6B6B; }
+
+  /* ============ STR 05 — TECHNOLOGIE (zelené pozadí jako v PDF) ============ */
+  .tech-page {
+    background: var(--green-bg);
+    color: white;
+  }
+  .tech-page .page-header,
+  .tech-page .page-footer {
+    color: rgba(255,255,255,0.6);
+    border-color: rgba(255,255,255,0.12);
+  }
+  .tech-page .page-footer .page-num { color: var(--accent); }
+  .tech-page .eyebrow-label { color: var(--accent); }
+  .tech-page h1.display em,
+  .tech-page h2.display em { color: var(--accent); }
+  .tech-page .lead { color: rgba(255,255,255,0.7); }
+
+  .tech-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin-bottom: 32px;
+  }
+  @media (max-width: 768px) { .tech-stats { grid-template-columns: repeat(2, 1fr); } }
+  .tech-stat {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 22px 24px; border-radius: 12px;
+  }
+  .tech-stat-value {
+    font-size: 36px; font-weight: 800; color: white;
+    line-height: 1; margin-bottom: 6px; letter-spacing: -0.025em;
+  }
+  .tech-stat-label { font-size: 12px; color: rgba(255,255,255,0.75); font-weight: 500; }
+
+  .tech-params-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px 32px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px; padding: 28px 32px;
+  }
+  @media (max-width: 600px) { .tech-params-grid { grid-template-columns: 1fr; } }
+  .tech-params-section {
+    grid-column: 1 / -1;
+    font-size: 12px; font-weight: 700; color: var(--accent);
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding-top: 16px; padding-bottom: 4px;
+  }
+  .tech-params-section:first-child { padding-top: 0; }
+  .tech-param-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 13px;
+  }
+  .tech-param-row span:first-child { opacity: 0.7; }
+  .tech-param-row span:last-child { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ============ STR 06 — HARMONOGRAM ============ */
+  .timeline {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 16px; margin: 32px 0;
+  }
+  @media (max-width: 900px) {
+    .timeline { grid-template-columns: 1fr; }
+    .timeline-step::after { display: none !important; }
+  }
+  .timeline-step {
+    background: var(--bg-light);
+    border: 1px solid var(--border-soft);
+    padding: 22px 18px; border-radius: 12px;
+    position: relative;
+  }
+  .timeline-step::after {
+    content: '→'; position: absolute;
+    right: -14px; top: 32px;
+    color: var(--primary); font-size: 22px; font-weight: 700; z-index: 2;
+  }
+  .timeline-step:last-child::after { display: none; }
+  .timeline-step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--primary); color: white;
+    font-weight: 800; font-size: 14px; margin-bottom: 12px;
+  }
+  .timeline-step-title { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 4px; }
+  .timeline-step-detail { font-size: 11.5px; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px; }
+  .timeline-step-time {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--primary); text-transform: uppercase;
+    background: var(--accent-soft); padding: 4px 8px; border-radius: 4px;
+    display: inline-block;
+  }
+
+  .warranty-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 12px; margin-top: 16px;
+  }
+  @media (max-width: 768px) { .warranty-grid { grid-template-columns: repeat(2, 1fr); } }
+  .warranty-card {
+    background: var(--bg-light); border: 1px solid var(--border-soft);
+    padding: 20px 16px; border-radius: 12px; text-align: center;
+  }
+  .warranty-card.dark {
+    background: var(--primary); color: white; border-color: var(--primary);
+  }
+  .warranty-value {
+    font-weight: 800; font-size: 28px; color: var(--primary);
+    line-height: 1; margin-bottom: 6px; letter-spacing: -0.02em;
+  }
+  .warranty-card.dark .warranty-value { color: var(--accent); }
+  .warranty-label {
+    font-size: 12px; color: var(--text); font-weight: 600; line-height: 1.3;
+  }
+  .warranty-card.dark .warranty-label { color: white; }
+  .warranty-sub {
+    display: block; font-size: 10px; color: var(--text-muted);
+    margin-top: 4px; font-weight: 400;
+  }
+  .warranty-card.dark .warranty-sub { color: rgba(255,255,255,0.6); }
+
+  /* ============ FINANCING ============ */
+  .essox-card {
+    background: var(--bg-light);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px 32px;
+    margin-top: 24px;
+  }
+  .essox-header {
+    display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .essox-logo {
+    background: #E63946; color: white;
+    padding: 10px 18px; border-radius: 6px;
+    font-weight: 900; letter-spacing: 0.08em; font-size: 16px;
+  }
+  .essox-tagline { font-size: 13px; color: var(--text-muted); }
+  .essox-row {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;
+  }
+  @media (max-width: 768px) { .essox-row { grid-template-columns: repeat(2, 1fr); } }
+  .essox-item {
+    text-align: center; padding: 18px 10px;
+    background: white; border-radius: 10px;
+    border: 1px solid var(--border-soft);
+  }
+  .essox-item-value {
+    font-weight: 800; font-size: 24px; color: var(--primary);
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .essox-item-label {
+    font-size: 10.5px; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-top: 8px; font-weight: 700;
+  }
+  .essox-item-sub { font-size: 11px; margin-top: 3px; color: var(--text-muted); }
+
+  /* ============ METODIKA ============ */
+  .method-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  @media (max-width: 768px) { .method-grid { grid-template-columns: 1fr; } }
+  .method-item {
+    background: var(--bg-light);
+    border: 1px solid var(--border-soft);
+    border-left: 4px solid var(--accent);
+    padding: 22px 24px; border-radius: 12px;
+  }
+  .method-item h4 {
+    font-weight: 800; font-size: 17px; letter-spacing: -0.015em;
+    margin: 0 0 6px; color: var(--text);
+  }
+  .method-item-claim {
+    margin: 0 0 12px; font-size: 13px; color: var(--text-muted);
+  }
+  .method-formula {
+    background: white;
+    border: 1px solid var(--border-soft);
+    padding: 10px 12px; border-radius: 6px;
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11.5px; line-height: 1.5; color: var(--primary-dark);
+  }
+  .method-source {
+    font-size: 11px; color: var(--text-muted); margin-top: 10px;
+    line-height: 1.5;
+  }
+  .method-source a {
+    color: var(--primary); text-decoration: none;
+    border-bottom: 1px dotted var(--primary);
+  }
+  .method-source strong { color: var(--text); font-weight: 700; }
+
+  /* ============ STR 07 — ZÁVĚR ============ */
+  .closing-page { min-height: 580px; }
+  .readiness-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+    margin: 32px 0;
+  }
+  @media (max-width: 768px) { .readiness-grid { grid-template-columns: repeat(2, 1fr); } }
+  .readiness-item {
+    background: var(--bg-light);
+    border: 1px solid var(--border-soft);
+    padding: 18px 16px; border-radius: 10px;
+    text-align: center;
+  }
+  .readiness-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px; margin-bottom: 10px;
+  }
+  .readiness-label {
+    font-size: 13px; font-weight: 700; color: var(--text);
+    line-height: 1.3;
+  }
+
+  .closing-price {
+    background: var(--primary); color: white;
+    border-radius: 16px; padding: 36px 40px;
+    margin-top: 24px;
+    display: grid; grid-template-columns: 1fr auto; gap: 24px;
+    align-items: center;
+  }
+  @media (max-width: 768px) { .closing-price { grid-template-columns: 1fr; } }
+  .closing-price-label {
+    font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+    opacity: 0.6; font-weight: 700; margin-bottom: 6px;
+  }
+  .closing-price-title {
+    font-size: 20px; font-weight: 700; letter-spacing: -0.015em;
+  }
+  .closing-price-value {
+    font-size: clamp(40px, 6vw, 64px); font-weight: 900;
+    line-height: 1; color: var(--accent); letter-spacing: -0.03em;
+  }
+  .closing-price-vat {
+    font-size: 14px; opacity: 0.6; margin-top: 6px;
+    letter-spacing: 0.05em;
+  }
+  .closing-disclaimer {
+    font-size: 11.5px; opacity: 0.6;
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    line-height: 1.55; font-style: italic;
+    grid-column: 1 / -1;
+  }
+
+  .contact-block {
+    display: grid; grid-template-columns: auto 1fr; gap: 16px;
+    background: var(--bg-light); border: 1px solid var(--border-soft);
+    padding: 20px 24px; border-radius: 12px;
+    margin-top: 24px; align-items: center;
+  }
+  .contact-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--primary); color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px; letter-spacing: 0.05em;
+  }
+  .contact-label {
+    font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-muted); font-weight: 600;
+  }
+  .contact-name {
+    font-size: 18px; font-weight: 800; color: var(--text);
+    letter-spacing: -0.015em; margin-top: 2px;
+  }
+  .contact-details {
+    font-size: 13px; color: var(--text-muted); margin-top: 4px;
+  }
+  .contact-details strong { color: var(--text); font-weight: 600; }
+
+  /* ============ TOC NAVIGATION ============ */
+  .toc {
+    position: sticky; top: 12px;
+    background: white; border-radius: 100px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    padding: 6px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin: 12px auto;
+    max-width: 1280px;
+    z-index: 100;
+  }
+  .toc-item {
+    padding: 8px 14px;
+    background: transparent; color: var(--text-muted);
+    border: none; border-radius: 100px;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .toc-item:hover { background: var(--bg-light); color: var(--primary); }
+  .toc-item.active { background: var(--primary); color: white; }
+  @media (max-width: 768px) { .toc { display: none; } }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+'use strict';
+const { useState, useMemo, useEffect } = React;
+const {
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip, Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Area
+} = Recharts;
+
+/* ===========================================================
+   DEFAULTS, PRESETS, VÝPOČTY — kopie z původní JSX kalkulačky
+   =========================================================== */
+const DEFAULTS = {
+  bessCapacityKWh: 2411, bessPowerKW: 1250, baseInvestment: 17550000,
+  ownEquityPct: 0, essoxPct: 70, essoxRate: 5.5, essoxYears: 7,
+  bankPct: 30, bankRate: 8.0, bankYears: 5,
+  reservedPowerKW: 800, peakOverrunKW: 250, overrunMonths: 6,
+  penaltyRate: 350, reservedReductionKW: 200, reservedPriceRate: 195,
+  arbitrageCapacityPct: 60, buyPrice: 1.5, sellPrice: 3.2, arbitrageCyclesPerYear: 320,
+  evCapacityPct: 15, evPrice: 11, evEnergyCostKWh: 1.8,
+  evUtilizationStart: 35, evGrowthPerYear: 25,
+  fveInstalledKWp: 0, fveSurplusDaily: 0, fveBuybackPrice: 0.5, fveSelfUsePrice: 4.5,
+  windInstalledKW: 0, windSurplusDaily: 0, windBuybackPrice: 0.5, windSelfUsePrice: 4.5,
+  opexPerYear: 80000, degradationPerYear: 1.5, electricityInflation: 3, analysisHorizon: 15,
+};
+
+const BUSINESS_PRESETS = {
+  truhlarna: { label: 'Truhlárna', reservedPowerKW: 250, peakOverrunKW: 80, overrunMonths: 6, penaltyRate: 350, reservedReductionKW: 50, evCapacityPct: 10, arbitrageCapacityPct: 70 },
+  strojirna: { label: 'Strojírna', reservedPowerKW: 800, peakOverrunKW: 250, overrunMonths: 8, penaltyRate: 350, reservedReductionKW: 200, evCapacityPct: 15, arbitrageCapacityPct: 60 },
+  potravinarstvi: { label: 'Potravinářství', reservedPowerKW: 500, peakOverrunKW: 150, overrunMonths: 10, penaltyRate: 350, reservedReductionKW: 100, evCapacityPct: 10, arbitrageCapacityPct: 65 },
+  logistika: { label: 'Logistika + kamiony', reservedPowerKW: 400, peakOverrunKW: 100, overrunMonths: 4, penaltyRate: 350, reservedReductionKW: 80, evCapacityPct: 50, evPrice: 17, arbitrageCapacityPct: 30 },
+  plast: { label: 'Plastikářství', reservedPowerKW: 700, peakOverrunKW: 200, overrunMonths: 9, penaltyRate: 350, reservedReductionKW: 150, evCapacityPct: 10, arbitrageCapacityPct: 65 },
+};
+
+const SIZING_PRESETS = {
+  small: { label: '500 kWh', bessCapacityKWh: 500, bessPowerKW: 250, baseInvestment: 4600000 },
+  medium: { label: '1 200 kWh', bessCapacityKWh: 1200, bessPowerKW: 600, baseInvestment: 9500000 },
+  standard: { label: '2 411 kWh', bessCapacityKWh: 2411, bessPowerKW: 1250, baseInvestment: 17550000 },
+  large: { label: '4 000 kWh', bessCapacityKWh: 4000, bessPowerKW: 2000, baseInvestment: 28500000 },
+};
+
+function pmt(rate, nper, pv) {
+  if (rate === 0) return pv / nper;
+  const r = rate / 12 / 100;
+  const n = nper * 12;
+  return (pv * r) / (1 - Math.pow(1 + r, -n));
+}
+
+function calculateProjections(inputs) {
+  const x = inputs;
+  const essoxAmount = x.baseInvestment * (x.essoxPct / 100);
+  const bankAmount = x.baseInvestment * (x.bankPct / 100);
+  const ownAmount = x.baseInvestment * (x.ownEquityPct / 100);
+  const essoxMonthly = essoxAmount > 0 ? pmt(x.essoxRate, x.essoxYears, essoxAmount) : 0;
+  const bankMonthly = bankAmount > 0 ? pmt(x.bankRate, x.bankYears, bankAmount) : 0;
+
+  const peakPenaltySavings = x.peakOverrunKW * x.penaltyRate * x.overrunMonths;
+  const reservedSavings = x.reservedReductionKW * x.reservedPriceRate * 12;
+  const peakShavingYear = peakPenaltySavings + reservedSavings;
+
+  const arbitrageUsable = x.bessCapacityKWh * (x.arbitrageCapacityPct / 100) * 0.93;
+  const arbitrageMargin = x.sellPrice - x.buyPrice;
+  const arbitrageYear = arbitrageUsable * x.arbitrageCyclesPerYear * arbitrageMargin;
+
+  const evUsable = x.bessCapacityKWh * (x.evCapacityPct / 100) * 0.93;
+  const evMargin = x.evPrice - x.evEnergyCostKWh;
+  const evYearBase = evUsable * 365 * (x.evUtilizationStart / 100) * evMargin;
+
+  const fveYear = x.fveSurplusDaily * 365 * (x.fveSelfUsePrice - x.fveBuybackPrice);
+  const windYear = x.windSurplusDaily * 365 * (x.windSelfUsePrice - x.windBuybackPrice);
+  const totalYearOneRevenue = peakShavingYear + arbitrageYear + evYearBase + fveYear + windYear;
+
+  const yearly = [];
+  let cumulative = -ownAmount;
+
+  for (let year = 1; year <= x.analysisHorizon; year++) {
+    const deg = Math.pow(1 - x.degradationPerYear / 100, year - 1);
+    const inf = Math.pow(1 + x.electricityInflation / 100, year - 1);
+    const evUtil = Math.min(95, x.evUtilizationStart * Math.pow(1 + x.evGrowthPerYear / 100, year - 1));
+    const evY = evUsable * 365 * (evUtil / 100) * evMargin * inf * deg;
+    const peakY = peakShavingYear * inf;
+    const arbY = arbitrageYear * inf * deg;
+    const fveY = fveYear * inf;
+    const windY = windYear * inf;
+    const revenue = peakY + arbY + evY + fveY + windY;
+    const essoxAnnual = year <= x.essoxYears ? essoxMonthly * 12 : 0;
+    const bankAnnual = year <= x.bankYears ? bankMonthly * 12 : 0;
+    const opex = x.opexPerYear * inf;
+    const netCF = revenue - essoxAnnual - bankAnnual - opex;
+    cumulative += netCF;
+    yearly.push({
+      year, revenue: Math.round(revenue),
+      peakShaving: Math.round(peakY), arbitrage: Math.round(arbY),
+      ev: Math.round(evY), fve: Math.round(fveY), wind: Math.round(windY),
+      essoxPayment: Math.round(essoxAnnual), bankPayment: Math.round(bankAnnual),
+      opex: Math.round(opex), netCashflow: Math.round(netCF),
+      cumulativeCashflow: Math.round(cumulative),
+      monthlyCashflow: Math.round(netCF / 12),
+    });
+  }
+
+  let paybackYear = null;
+  for (let i = 0; i < yearly.length; i++) {
+    if (yearly[i].cumulativeCashflow >= 0) {
+      if (i === 0) paybackYear = yearly[i].cumulativeCashflow / yearly[i].netCashflow;
+      else {
+        const prev = yearly[i - 1].cumulativeCashflow;
+        const cur = yearly[i].cumulativeCashflow;
+        paybackYear = i + (-prev / (cur - prev));
+      }
+      break;
+    }
+  }
+
+  const totalNet = yearly[yearly.length - 1].cumulativeCashflow + ownAmount;
+  const totalRevenue = yearly.reduce((s, y) => s + y.revenue, 0);
+  const totalCosts = yearly.reduce((s, y) => s + y.essoxPayment + y.bankPayment + y.opex, 0);
+
+  return {
+    yearly,
+    summary: {
+      baseInvestment: x.baseInvestment, ownAmount, essoxAmount, bankAmount,
+      essoxMonthly: Math.round(essoxMonthly), bankMonthly: Math.round(bankMonthly),
+      totalMonthlyPayment: Math.round(essoxMonthly + bankMonthly),
+      yearOneRevenue: Math.round(totalYearOneRevenue),
+      yearOneNetMonthly: Math.round(yearly[0].monthlyCashflow),
+      peakShavingYear: Math.round(peakShavingYear),
+      arbitrageYear: Math.round(arbitrageYear),
+      evYearBase: Math.round(evYearBase),
+      fveYear: Math.round(fveYear),
+      windYear: Math.round(windYear),
+      paybackYear,
+      totalRevenue: Math.round(totalRevenue),
+      totalCosts: Math.round(totalCosts),
+      totalProfit: Math.round(totalNet - ownAmount),
+      positiveFromYear: yearly.find(y => y.monthlyCashflow > 0)?.year ?? null,
+    }
+  };
+}
+
+const fmtKc = (n) => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  const abs = Math.abs(n);
+  if (abs >= 1000000) return `${(n / 1000000).toFixed(2).replace('.', ',')} mil. Kč`;
+  if (abs >= 10000) return `${Math.round(n / 1000).toLocaleString('cs-CZ')} tis. Kč`;
+  return `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
+};
+const fmtKcFull = (n) => {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
+};
+const fmtYears = (n) => n === null ? '> horizont' : `${n.toFixed(1).replace('.', ',')} let`;
+
+/* ===========================================================
+   UI komponenty
+   =========================================================== */
+function Slider({ label, value, onChange, min, max, step, unit, help, examples }) {
+  return (
+    <div className="slider-block">
+      <div className="slider-label-row">
+        <label className="slider-label">{label}</label>
+        <span className="slider-value">{typeof value === 'number' ? value.toLocaleString('cs-CZ') : value} {unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={(e) => onChange(parseFloat(e.target.value))} />
+      {(help || examples) && (
+        <div className="slider-help">
+          {help && <div>{help}</div>}
+          {examples && <div><em>{examples}</em></div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NumberInput({ label, value, onChange, unit, help }) {
+  return (
+    <div className="slider-block">
+      <label className="slider-label" style={{ display: 'block', marginBottom: '4px' }}>{label}</label>
+      <div className="num-row">
+        <input type="number" value={value} onChange={(e) => onChange(parseFloat(e.target.value) || 0)} />
+        {unit && <span>{unit}</span>}
+      </div>
+      {help && <div className="slider-help">{help}</div>}
+    </div>
+  );
+}
+
+function PageHeader({ docNumber, title }) {
+  return (
+    <div className="page-header">
+      <span>Cenová nabídka {docNumber ? '· ' + docNumber : ''}</span>
+      <span>{title || ''}</span>
+    </div>
+  );
+}
+
+function PageFooter({ pageNum }) {
+  return (
+    <div className="page-footer">
+      <span>BESS BRES-2400-1250 · 2 411 kWh</span>
+      <span className="page-num">{pageNum}</span>
+    </div>
+  );
+}
+
+/* ===========================================================
+   HLAVNÍ APLIKACE
+   =========================================================== */
+function App() {
+  const [inputs, setInputs] = useState(DEFAULTS);
+  const [businessPreset, setBusinessPreset] = useState('strojirna');
+  const [activePage, setActivePage] = useState('hero');
+
+  const setVal = (key) => (v) => setInputs(prev => ({ ...prev, [key]: v }));
+  const applyPreset = (key) => {
+    setBusinessPreset(key);
+    setInputs(prev => ({ ...prev, ...BUSINESS_PRESETS[key] }));
+  };
+  const applySizing = (key) => setInputs(prev => ({ ...prev, ...SIZING_PRESETS[key] }));
+
+  const results = useMemo(() => calculateProjections(inputs), [inputs]);
+  const { yearly, summary } = results;
+
+  const status = useMemo(() => {
+    if (summary.paybackYear === null) return { kind: 'bad', text: 'Investice se v horizontu nevrátí — zvyšte podíl vlastních zdrojů nebo využití funkcí' };
+    if (summary.paybackYear <= 6) return { kind: 'good', text: 'Vynikající investice — rychlá návratnost' };
+    if (summary.paybackYear <= 10) return { kind: 'good', text: 'Zdravá investice s rozumnou návratností' };
+    if (summary.paybackYear <= 14) return { kind: 'warning', text: 'Přijatelná návratnost — zvažte optimalizaci financování' };
+    return { kind: 'warning', text: 'Návratnost je delší — výnosy by mohly být vyšší' };
+  }, [summary]);
+
+  const breakdownData = [
+    { name: 'Peak shaving', value: summary.peakShavingYear, color: '#1F4A2E' },
+    { name: 'Arbitráž', value: summary.arbitrageYear, color: '#3A8246' },
+    { name: 'EV nabíjení', value: summary.evYearBase, color: '#6FA86C' },
+    { name: 'FVE přetoky', value: summary.fveYear, color: '#D4A93C' },
+    { name: 'Vítr přetoky', value: summary.windYear, color: '#8B7355' },
+  ].filter(d => d.value > 0);
+
+  const scrollTo = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setActivePage(id);
+  };
+
+  return (
+    <div>
+      {/* ============ TOC NAVIGATION ============ */}
+      <nav className="toc">
+        <button className={`toc-item ${activePage === 'hero' ? 'active' : ''}`} onClick={() => scrollTo('hero')}>01 · Úvod</button>
+        <button className={`toc-item ${activePage === 'id' ? 'active' : ''}`} onClick={() => scrollTo('id')}>02 · Identifikace</button>
+        <button className={`toc-item ${activePage === 'benefits' ? 'active' : ''}`} onClick={() => scrollTo('benefits')}>03 · Co získáte</button>
+        <button className={`toc-item ${activePage === 'calc' ? 'active' : ''}`} onClick={() => scrollTo('calc')}>04 · Kalkulačka</button>
+        <button className={`toc-item ${activePage === 'tech' ? 'active' : ''}`} onClick={() => scrollTo('tech')}>05 · Technologie</button>
+        <button className={`toc-item ${activePage === 'realizace' ? 'active' : ''}`} onClick={() => scrollTo('realizace')}>06 · Realizace</button>
+        <button className={`toc-item ${activePage === 'method' ? 'active' : ''}`} onClick={() => scrollTo('method')}>07 · Metodika</button>
+        <button className={`toc-item ${activePage === 'closing' ? 'active' : ''}`} onClick={() => scrollTo('closing')}>08 · Závěr</button>
+      </nav>
+
+      {/* ============================================================
+          STR 01 — HERO (jako titulka cenové nabídky)
+          ============================================================ */}
+      <section className="page hero-page" id="hero">
+        <PageHeader />
+        <div className="page-body">
+          <div className="eyebrow-pill">Model BRES-2400-1250 · 2 411 kWh</div>
+          <div style={{ marginTop: 18 }}>
+            <span className="eyebrow-label">Cenová nabídka</span>
+          </div>
+          <div className="hero-grid">
+            <div>
+              <h1 className="display">
+                Bateriové úložiště, které <em>vám vydělává</em> každý měsíc.
+              </h1>
+              <p className="lead">
+                Kontejnerové BESS typu „All-in-One" pro dynamické řízení energetické bilance průmyslového areálu — peak shaving, arbitráž, nabíjení EV, využití přetoků FVE.
+                Interaktivní propočet návratnosti pro váš provoz.
+              </p>
+
+              <div className="hero-stats">
+                <div className="hero-stat">
+                  <div className="hero-stat-value">{inputs.bessPowerKW.toLocaleString('cs-CZ')}<sup>kW</sup></div>
+                  <div className="hero-stat-label">Jmenovitý výkon</div>
+                </div>
+                <div className="hero-stat">
+                  <div className="hero-stat-value">{inputs.bessCapacityKWh.toLocaleString('cs-CZ')}<sup>kWh</sup></div>
+                  <div className="hero-stat-label">Kapacita úložiště</div>
+                </div>
+                <div className="hero-stat">
+                  <div className="hero-stat-value">93<sup>%</sup></div>
+                  <div className="hero-stat-label">Max. účinnost</div>
+                </div>
+                <div className="hero-stat">
+                  <div className="hero-stat-value">IP54</div>
+                  <div className="hero-stat-label">Stupeň krytí (venkovní)</div>
+                </div>
+              </div>
+
+              <div className="hero-meta">
+                <span className="hero-meta-item"><strong>+420 602 118 299</strong></span>
+                <span className="hero-meta-item">miroslav.benes@freeheating.cz</span>
+                <span className="hero-meta-item">Platnost nabídky: 30 dní</span>
+              </div>
+            </div>
+
+            <div className="hero-illustration">
+              <div className="container-svg">
+                <svg viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 'auto' }}>
+                  {/* Stylizovaný kontejner BESS */}
+                  <defs>
+                    <linearGradient id="cont" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0" stopColor="#3A4A3F" />
+                      <stop offset="1" stopColor="#2A3A2F" />
+                    </linearGradient>
+                  </defs>
+                  {/* podlaha */}
+                  <line x1="10" y1="240" x2="470" y2="240" stroke="#1F4A2E" strokeWidth="1.5" opacity="0.3" />
+                  {/* kontejner tělo */}
+                  <rect x="40" y="80" width="380" height="140" rx="3" fill="url(#cont)" stroke="#1F4A2E" strokeWidth="1.5" />
+                  {/* dveře vlevo */}
+                  <rect x="50" y="92" width="46" height="116" fill="none" stroke="#6FA86C" strokeWidth="1" opacity="0.5" />
+                  <text x="73" y="155" textAnchor="middle" fill="#D4A93C" fontSize="10" fontWeight="700" transform="rotate(-90 73 155)">FREE HEATING</text>
+                  {/* ventilační mřížky */}
+                  {[120, 175, 230, 285, 340].map((x, i) => (
+                    <g key={i}>
+                      <rect x={x} y="105" width="38" height="98" fill="none" stroke="#6FA86C" strokeWidth="0.8" opacity="0.4" />
+                      <rect x={x+4} y="115" width="30" height="38" fill="#1F4A2E" opacity="0.6" />
+                      <rect x={x+4} y="158" width="30" height="38" fill="#1F4A2E" opacity="0.4" />
+                      {/* ventilátor */}
+                      <circle cx={x+19} cy="134" r="10" fill="none" stroke="#D9E8D5" strokeWidth="0.8" opacity="0.6" />
+                      <circle cx={x+19} cy="134" r="3" fill="#D9E8D5" opacity="0.4" />
+                    </g>
+                  ))}
+                  {/* rozváděč vpravo */}
+                  <rect x="395" y="105" width="22" height="98" fill="#1F4A2E" stroke="#6FA86C" strokeWidth="0.8" />
+                  <rect x="400" y="120" width="12" height="18" fill="#D4A93C" opacity="0.7" />
+                  {/* logo Mu Energy */}
+                  <circle cx="120" cy="148" r="12" fill="#1F4A2E" />
+                  <text x="120" y="152" textAnchor="middle" fill="#D9E8D5" fontSize="9" fontWeight="800">ME</text>
+                  {/* zelený akcent */}
+                  <circle cx="240" cy="60" r="32" fill="#6FA86C" opacity="0.2" />
+                  <circle cx="240" cy="60" r="20" fill="#6FA86C" opacity="0.3" />
+                  {/* štítek nahoře */}
+                  <text x="230" y="68" textAnchor="middle" fill="#1F4A2E" fontSize="11" fontWeight="800" letterSpacing="0.05em">BRES-2400-1250</text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="01" />
+      </section>
+
+      {/* ============================================================
+          STR 02 — IDENTIFIKACE (smluvní strany)
+          ============================================================ */}
+      <section className="page" id="id">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Identifikace nabídky</span>
+          <h2 className="display">Smluvní strany a <em>předmět dodávky</em></h2>
+
+          <div className="id-grid" style={{ marginTop: 28 }}>
+            <div className="id-cell">
+              <div className="id-cell-label">Číslo nabídky</div>
+              <div className="id-cell-value">CN-2026-INTERAKTIVNI</div>
+            </div>
+            <div className="id-cell">
+              <div className="id-cell-label">Datum vystavení</div>
+              <div className="id-cell-value">15. 5. 2026</div>
+            </div>
+            <div className="id-cell">
+              <div className="id-cell-label">Platnost</div>
+              <div className="id-cell-value">30 dní</div>
+            </div>
+            <div className="id-cell">
+              <div className="id-cell-label">Měna / DPH</div>
+              <div className="id-cell-value">CZK · bez DPH</div>
+            </div>
+          </div>
+
+          <div className="parties-grid">
+            <div className="party supplier">
+              <div className="party-label">Dodavatel</div>
+              <div className="party-name">free heating s.r.o.</div>
+              <div className="party-detail">
+                <div><strong>IČO:</strong> 09087087</div>
+                <div><strong>Sídlo:</strong> Na Perštýně 342/1, Praha 1</div>
+                <div><strong>Kontakt:</strong> Miroslav Beneš · +420 602 118 299</div>
+                <div><strong>E-mail:</strong> miroslav.benes@freeheating.cz</div>
+              </div>
+            </div>
+            <div className="party customer">
+              <div className="party-label">Zákazník</div>
+              <div className="party-name">[Doplníme dle obhlídky]</div>
+              <div className="party-detail">
+                <div><strong>IČO:</strong> ─</div>
+                <div><strong>Sídlo:</strong> ─</div>
+                <div style={{ marginTop: 10, fontSize: 12, opacity: 0.8 }}>
+                  Konfigurace investice níže je předběžná, na základě
+                  veřejně dostupných statistik. Po obhlídce upřesníme.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <h3 className="display" style={{ fontSize: 18, marginTop: 12, marginBottom: 10 }}>Předmět nabídky</h3>
+          <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: '0 0 18px', lineHeight: 1.6 }}>
+            Dodávka <strong style={{color:'var(--text)'}}>kontejnerového bateriového úložiště (all-in-one) na klíč</strong> — model BRES-2400-1250 o jmenovitém výkonu <strong style={{color:'var(--text)'}}>1 250 kW</strong> a kapacitě <strong style={{color:'var(--text)'}}>2 411,5 kWh</strong>. Systém slouží k dynamickému řízení energetické bilance průmyslového areálu — peak shaving, arbitráž, záloha i podpůrné služby pro síť.
+          </p>
+
+          <div className="scope-card">
+            <div className="scope-title">Rozsah dodávky</div>
+            <div className="scope-list">
+              <div className="scope-item">BESS kontejner BRES-2400-1250</div>
+              <div className="scope-item">Kabeláž AC/DC</div>
+              <div className="scope-item">Inženýring</div>
+              <div className="scope-item">Střídač (PCS)</div>
+              <div className="scope-item">Rozváděč AC/DC</div>
+              <div className="scope-item">Doprava na místo instalace</div>
+              <div className="scope-item">Trafostanice</div>
+              <div className="scope-item">DPS, DPSP dokumentace</div>
+              <div className="scope-item">Instalace a uvedení do provozu</div>
+              <div className="scope-item">Stavební příprava*</div>
+              <div className="scope-item">Vyřízení připojení k DS</div>
+              <div className="scope-item">Zaškolení obsluhy</div>
+            </div>
+            <div className="scope-note">
+              * Položky závislé na místním šetření (stavební a zemní práce, projekční práce) budou upřesněny po obhlídce objektu a nejsou zahrnuty v ceně.
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="02" />
+      </section>
+
+      {/* ============================================================
+          STR 03 — CO ZÍSKÁTE (4 benefity)
+          ============================================================ */}
+      <section className="page" id="benefits">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Klíčové funkce systému</span>
+          <h2 className="display">Čtyři způsoby, jak BESS <em>pracuje pro vás</em></h2>
+          <p className="lead">
+            Inteligentní řízení energetické bilance přináší úspory i nové zdroje příjmů. Systém přepíná mezi režimy podle aktuálních potřeb provozu a stavu trhu.
+          </p>
+
+          <div className="benefit-grid">
+            <div className="benefit-item">
+              <div className="benefit-num-label">01 · Snížení nákladů</div>
+              <h3 className="benefit-name">Peak Shaving</h3>
+              <p className="benefit-desc">
+                Při překročení rezervovaného výkonu vám distributor účtuje <strong>1 683 Kč/kW/měsíc na NN</strong>, na VN typicky 200–400 Kč/kW/měs. BESS pokryje špičky z baterie a překročení nenastane. Bonus: lze snížit i samotnou rezervaci.
+              </p>
+              <span className="benefit-tag">Úspora distribučních poplatků</span>
+              <div className="benefit-source">
+                Zdroj: <a href="https://www.cezdistribuce.cz/cs/pro-zakazniky/potrebuji-vyresit/ceny-a-podminky/ceny-pri-prekroceni-rezervovaneho-prikonu-a-vykonu" target="_blank" rel="noopener">ČEZ Distribuce — ceník překročení</a>
+              </div>
+            </div>
+
+            <div className="benefit-item">
+              <div className="benefit-num-label">02 · Optimalizace ceny</div>
+              <h3 className="benefit-name">Energetická arbitráž</h3>
+              <p className="benefit-desc">
+                Průměr OTE 2025: <strong>2 000–2 300 Kč/MWh</strong>, denní spread 1,5–3 Kč/kWh. BESS naplníte v noci (1,2–1,8 Kč/kWh), využijete ve špičce (3–4,5 Kč/kWh). Při 320 cyklech/rok z 6 000 životních = 18+ let.
+              </p>
+              <span className="benefit-tag">Nákup levně · spotřeba ve špičce</span>
+              <div className="benefit-source">
+                Zdroj: <a href="https://www.ote-cr.cz/cs/kratkodobe-trhy/elektrina/denni-trh" target="_blank" rel="noopener">OTE — Denní trh</a>
+              </div>
+            </div>
+
+            <div className="benefit-item">
+              <div className="benefit-num-label">03 · Dodatečný příjem</div>
+              <h3 className="benefit-name">Nabíjení elektromobilů</h3>
+              <p className="benefit-desc">
+                V ČR jezdí přes <strong>60 000 elektromobilů</strong>, registrace rostou o <strong>30–60 % YoY</strong>. Osobní 8–15 Kč/kWh, kamiony DC 600 kW až 17 Kč/kWh. Energie z BESS naplněného v noci → marže 9–15 Kč/kWh.
+              </p>
+              <span className="benefit-tag">Roste s adopcí EV v čase</span>
+              <div className="benefit-source">
+                Zdroj: <a href="https://www.cistadoprava.cz/" target="_blank" rel="noopener">Centrum dopravního výzkumu</a> · <a href="https://mpo.gov.cz/assets/cz/energetika/strategicke-a-koncepcni-dokumenty/narodni-akcni-plan-pro-chytre-site/2024/6/Elektromobilita-predikce-aktualizace.pdf" target="_blank" rel="noopener">MPO predikce 2045</a>
+              </div>
+            </div>
+
+            <div className="benefit-item">
+              <div className="benefit-num-label">04 · Zhodnocení přetoků</div>
+              <h3 className="benefit-name">Přetoky FVE a větru</h3>
+              <p className="benefit-desc">
+                Současný výkup přetoků: <strong>~0,5 Kč/kWh</strong> — téměř bezpředmětné. Uložením do BESS a vlastní spotřebou za 3,5–5 Kč/kWh získáte <strong>uplift 3–4,5 Kč/kWh</strong> na každou přetečenou kWh. Platí i pro vítr.
+              </p>
+              <span className="benefit-tag">Až 9× vyšší hodnota energie</span>
+              <div className="benefit-source">
+                Zdroj: ceník výkupu povinně vykupujícího · ERÚ rozhodnutí 12/2025
+              </div>
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="03" />
+      </section>
+
+      {/* ============================================================
+          STR 04 — KALKULAČKA (kompletní funkční)
+          ============================================================ */}
+      <section className="page" id="calc">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Interaktivní propočet</span>
+          <h2 className="display">Kalkulačka <em>pro váš provoz</em></h2>
+          <p className="lead">
+            Nastavte parametry vašeho podniku — kalkulačka okamžitě přepočítá měsíční cashflow a návratnost. Všechny vstupy jsou pojištěné typickými hodnotami z veřejně dostupných dat.
+          </p>
+
+          {/* VÝSLEDKOVÝ BANNER NAHOŘE */}
+          <div className="result-hero">
+            <div className="result-hero-label">Vaše návratnost</div>
+            <div className="result-hero-value">{fmtYears(summary.paybackYear)}</div>
+            <div className="result-hero-cf">
+              <strong>{fmtKc(summary.yearOneNetMonthly)}</strong> čistý cashflow <strong>každý měsíc</strong> od prvního roku ·
+              {' '}{summary.positiveFromYear ? `v plusu od ${summary.positiveFromYear}. roku` : 'záporné CF v 1. roce — zvyšte výnosy či vlastní vstup'}
+            </div>
+            <div className={`status-line status-${status.kind}`}>
+              <span className="status-dot"></span>
+              <span>{status.text}</span>
+            </div>
+            <div className="result-hero-grid">
+              <div>
+                <div className="result-hero-grid-label">Roční výnosy</div>
+                <div className="result-hero-grid-value">{fmtKc(summary.yearOneRevenue)}</div>
+                <div className="result-hero-grid-sub">ze čtyř zdrojů zároveň</div>
+              </div>
+              <div>
+                <div className="result-hero-grid-label">Měsíční splátka</div>
+                <div className="result-hero-grid-value">{fmtKc(summary.totalMonthlyPayment)}</div>
+                <div className="result-hero-grid-sub">ESSOX + úvěr</div>
+              </div>
+              <div>
+                <div className="result-hero-grid-label">Zisk za {inputs.analysisHorizon} let</div>
+                <div className="result-hero-grid-value">{fmtKc(summary.totalProfit)}</div>
+                <div className="result-hero-grid-sub">po všech nákladech</div>
+              </div>
+            </div>
+          </div>
+
+          {/* LAYOUT 2 SLOUPCE */}
+          <div className="calc-grid">
+            {/* LEVÝ SLOUPEC */}
+            <div>
+              <div className="calc-card">
+                <div className="calc-card-header"><h3>01 · Velikost úložiště</h3></div>
+                <div className="preset-row">
+                  {Object.entries(SIZING_PRESETS).map(([k, p]) => (
+                    <button key={k}
+                      className={`preset-btn ${inputs.bessCapacityKWh === p.bessCapacityKWh ? 'active' : ''}`}
+                      onClick={() => applySizing(k)}>{p.label}</button>
+                  ))}
+                </div>
+                <NumberInput label="Kapacita" value={inputs.bessCapacityKWh} onChange={setVal('bessCapacityKWh')} unit="kWh" />
+                <NumberInput label="Výkon" value={inputs.bessPowerKW} onChange={setVal('bessPowerKW')} unit="kW" />
+                <NumberInput label="Cena investice" value={inputs.baseInvestment} onChange={setVal('baseInvestment')} unit="Kč" help="na klíč včetně instalace" />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: 'var(--accent)' }}>
+                <div className="calc-card-header"><h3>02 · Typ provozu</h3></div>
+                <div className="preset-row">
+                  {Object.entries(BUSINESS_PRESETS).map(([k, p]) => (
+                    <button key={k}
+                      className={`preset-btn ${businessPreset === k ? 'active' : ''}`}
+                      onClick={() => applyPreset(k)}>{p.label}</button>
+                  ))}
+                </div>
+                <div className="slider-help" style={{ fontStyle: 'italic' }}>
+                  Předvolba nastaví typické hodnoty. Vše lze následně upravit ručně.
+                </div>
+              </div>
+
+              <div className="calc-card">
+                <div className="calc-card-header">
+                  <h3>03 · Peak Shaving</h3>
+                  <span className="calc-badge">{fmtKc(summary.peakShavingYear)}/rok</span>
+                </div>
+                <Slider label="Rezervovaný výkon" value={inputs.reservedPowerKW} onChange={setVal('reservedPowerKW')} min={100} max={2000} step={10} unit="kW" help="Sjednaný s distributorem" />
+                <Slider label="Průměrné překročení" value={inputs.peakOverrunKW} onChange={setVal('peakOverrunKW')} min={0} max={500} step={5} unit="kW" help="Čtvrthodinové maximum nad rezervovaným" />
+                <Slider label="Měsíců s překročením / rok" value={inputs.overrunMonths} onChange={setVal('overrunMonths')} min={0} max={12} step={1} unit="měs." />
+                <Slider label="Penále za překročení" value={inputs.penaltyRate} onChange={setVal('penaltyRate')} min={100} max={1700} step={10} unit="Kč/kW/měs." help="NN = 1 683 (ČEZD 2026), VN 200–400" />
+                <div className="calc-divider" />
+                <Slider label="Snížení rez. výkonu díky BESS" value={inputs.reservedReductionKW} onChange={setVal('reservedReductionKW')} min={0} max={500} step={10} unit="kW" />
+                <Slider label="Cena rezervovaného výkonu" value={inputs.reservedPriceRate} onChange={setVal('reservedPriceRate')} min={50} max={400} step={5} unit="Kč/kW/měs." />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: '#3A8246' }}>
+                <div className="calc-card-header">
+                  <h3>04 · Arbitráž</h3>
+                  <span className="calc-badge">{fmtKc(summary.arbitrageYear)}/rok</span>
+                </div>
+                <Slider label="% kapacity pro arbitráž" value={inputs.arbitrageCapacityPct} onChange={setVal('arbitrageCapacityPct')} min={0} max={100} step={5} unit="%" />
+                <Slider label="Nákupní cena (noc/přebytek)" value={inputs.buyPrice} onChange={setVal('buyPrice')} min={0.5} max={5} step={0.1} unit="Kč/kWh" help="Spot v noci 1,2–2,0" />
+                <Slider label="Cena ve špičce" value={inputs.sellPrice} onChange={setVal('sellPrice')} min={1} max={10} step={0.1} unit="Kč/kWh" help="Uspořená cena 2,8–4,5" />
+                <Slider label="Cyklů ročně" value={inputs.arbitrageCyclesPerYear} onChange={setVal('arbitrageCyclesPerYear')} min={0} max={365} step={5} unit="cyklů" help="6 000+ životních / 320 ročně = 18 let" />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: '#6FA86C' }}>
+                <div className="calc-card-header">
+                  <h3>05 · EV nabíjení</h3>
+                  <span className="calc-badge">{fmtKc(summary.evYearBase)}/rok</span>
+                </div>
+                <Slider label="% kapacity pro EV" value={inputs.evCapacityPct} onChange={setVal('evCapacityPct')} min={0} max={70} step={5} unit="%" help="0–30 osobní · 30–70 logistika a kamiony" />
+                <Slider label="Prodejní cena za kWh" value={inputs.evPrice} onChange={setVal('evPrice')} min={5} max={20} step={0.5} unit="Kč/kWh" examples="Osobní 8–15 · kamiony až 17" />
+                <Slider label="Náklad na energii" value={inputs.evEnergyCostKWh} onChange={setVal('evEnergyCostKWh')} min={0.5} max={5} step={0.1} unit="Kč/kWh" />
+                <Slider label="Využití nyní" value={inputs.evUtilizationStart} onChange={setVal('evUtilizationStart')} min={5} max={100} step={5} unit="%" />
+                <Slider label="Růst využití ročně" value={inputs.evGrowthPerYear} onChange={setVal('evGrowthPerYear')} min={0} max={50} step={1} unit="%" examples="ČR: +30 % YoY" />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: '#D4A93C' }}>
+                <div className="calc-card-header">
+                  <h3>06 · FVE přetoky</h3>
+                  <span className="calc-badge">{fmtKc(summary.fveYear)}/rok</span>
+                </div>
+                <Slider label="Instalovaný výkon FVE" value={inputs.fveInstalledKWp} onChange={setVal('fveInstalledKWp')} min={0} max={2000} step={10} unit="kWp" />
+                <Slider label="Denní přetok" value={inputs.fveSurplusDaily} onChange={setVal('fveSurplusDaily')} min={0} max={5000} step={50} unit="kWh/den" />
+                <Slider label="Cena výkupu" value={inputs.fveBuybackPrice} onChange={setVal('fveBuybackPrice')} min={0} max={2} step={0.1} unit="Kč/kWh" />
+                <Slider label="Cena vlastní spotřeby" value={inputs.fveSelfUsePrice} onChange={setVal('fveSelfUsePrice')} min={1} max={10} step={0.1} unit="Kč/kWh" />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: '#8B7355' }}>
+                <div className="calc-card-header">
+                  <h3>07 · Větrná elektrárna</h3>
+                  <span className="calc-badge">{fmtKc(summary.windYear)}/rok</span>
+                </div>
+                <Slider label="Instalovaný výkon" value={inputs.windInstalledKW} onChange={setVal('windInstalledKW')} min={0} max={3000} step={50} unit="kW" />
+                <Slider label="Denní přetok" value={inputs.windSurplusDaily} onChange={setVal('windSurplusDaily')} min={0} max={10000} step={100} unit="kWh/den" />
+                <Slider label="Cena výkupu" value={inputs.windBuybackPrice} onChange={setVal('windBuybackPrice')} min={0} max={2} step={0.1} unit="Kč/kWh" />
+                <Slider label="Cena vlastní spotřeby" value={inputs.windSelfUsePrice} onChange={setVal('windSelfUsePrice')} min={1} max={10} step={0.1} unit="Kč/kWh" />
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: 'var(--primary-dark)' }}>
+                <div className="calc-card-header"><h3>08 · Financování</h3></div>
+                <Slider label="Vlastní prostředky" value={inputs.ownEquityPct} onChange={setVal('ownEquityPct')} min={0} max={100} step={5} unit="%" help={`= ${fmtKc(inputs.baseInvestment * inputs.ownEquityPct / 100)}`} />
+                <Slider label="ESSOX leasing" value={inputs.essoxPct} onChange={setVal('essoxPct')} min={0} max={100} step={5} unit="%" help={`${inputs.essoxRate}% p.a. · ${inputs.essoxYears} let · ${fmtKc(summary.essoxMonthly)}/měs.`} />
+                <Slider label="Sazba ESSOX" value={inputs.essoxRate} onChange={setVal('essoxRate')} min={3} max={10} step={0.1} unit="%" />
+                <Slider label="Doba ESSOX" value={inputs.essoxYears} onChange={setVal('essoxYears')} min={1} max={10} step={1} unit="let" />
+                <div className="calc-divider" />
+                <Slider label="Bankovní úvěr" value={inputs.bankPct} onChange={setVal('bankPct')} min={0} max={100} step={5} unit="%" help={`${inputs.bankRate}% p.a. · ${inputs.bankYears} let · ${fmtKc(summary.bankMonthly)}/měs.`} />
+                <Slider label="Sazba úvěru" value={inputs.bankRate} onChange={setVal('bankRate')} min={4} max={12} step={0.1} unit="%" />
+                <Slider label="Doba úvěru" value={inputs.bankYears} onChange={setVal('bankYears')} min={1} max={10} step={1} unit="let" />
+                {(inputs.ownEquityPct + inputs.essoxPct + inputs.bankPct) !== 100 && (
+                  <div className="warning-box">
+                    ⚠ Součet = {inputs.ownEquityPct + inputs.essoxPct + inputs.bankPct} %. Doporučeno 100 %.
+                  </div>
+                )}
+              </div>
+
+              <div className="calc-card" style={{ borderLeftColor: 'var(--text-muted)' }}>
+                <div className="calc-card-header"><h3>09 · Provoz a projekce</h3></div>
+                <Slider label="OPEX (servis, monitoring)" value={inputs.opexPerYear} onChange={setVal('opexPerYear')} min={0} max={500000} step={10000} unit="Kč/rok" />
+                <Slider label="Degradace baterie" value={inputs.degradationPerYear} onChange={setVal('degradationPerYear')} min={0} max={5} step={0.1} unit="%/rok" help="LFP: 1–2 %" />
+                <Slider label="Inflace cen energií" value={inputs.electricityInflation} onChange={setVal('electricityInflation')} min={0} max={10} step={0.5} unit="%" />
+                <Slider label="Horizont analýzy" value={inputs.analysisHorizon} onChange={setVal('analysisHorizon')} min={5} max={20} step={1} unit="let" />
+              </div>
+            </div>
+
+            {/* PRAVÝ SLOUPEC - VÝSLEDKY */}
+            <div>
+              <div className="panel">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <h3>Skladba výnosů — 1. rok</h3>
+                  <div style={{ fontSize: '24px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '-0.02em' }}>
+                    {fmtKc(summary.yearOneRevenue)}
+                  </div>
+                </div>
+                <p className="panel-sub">Z čeho se skládá roční výnos</p>
+                {breakdownData.map(d => {
+                  const pct = (d.value / summary.yearOneRevenue) * 100;
+                  return (
+                    <div key={d.name} className="breakdown-row">
+                      <div className="breakdown-label">
+                        <span className="breakdown-name">
+                          <span className="color-dot" style={{ background: d.color }}></span>
+                          {d.name}
+                        </span>
+                        <span className="breakdown-value">
+                          {fmtKc(d.value)} <span className="breakdown-pct">({pct.toFixed(0)} %)</span>
+                        </span>
+                      </div>
+                      <div className="breakdown-bar">
+                        <div className="breakdown-bar-fill" style={{ width: `${pct}%`, background: d.color }}></div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="panel">
+                <h3>Kumulativní cashflow</h3>
+                <p className="panel-sub">Kdy se investice dostane do plusu</p>
+                <ResponsiveContainer width="100%" height={260}>
+                  <ComposedChart data={yearly}>
+                    <CartesianGrid stroke="#E5E0D0" strokeDasharray="3 3" />
+                    <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                    <YAxis tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v) => fmtKcFull(v)} labelFormatter={(l) => `Rok ${l}`} />
+                    <ReferenceLine y={0} stroke="#1A1A1A" strokeWidth={2} />
+                    <Area type="monotone" dataKey="cumulativeCashflow" name="Kumulativní cashflow"
+                      stroke="#1F4A2E" strokeWidth={3} fill="#1F4A2E" fillOpacity={0.15} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="panel">
+                <h3>Roční výnosy podle zdroje</h3>
+                <p className="panel-sub">Sledujte růst podílu EV nabíjení v čase</p>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={yearly}>
+                    <CartesianGrid stroke="#E5E0D0" strokeDasharray="3 3" />
+                    <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                    <YAxis tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v) => fmtKcFull(v)} labelFormatter={(l) => `Rok ${l}`} />
+                    <Legend wrapperStyle={{ fontSize: '11px' }} />
+                    <Bar dataKey="peakShaving" stackId="a" fill="#1F4A2E" name="Peak shaving" />
+                    <Bar dataKey="arbitrage" stackId="a" fill="#3A8246" name="Arbitráž" />
+                    <Bar dataKey="ev" stackId="a" fill="#6FA86C" name="EV" />
+                    <Bar dataKey="fve" stackId="a" fill="#D4A93C" name="FVE" />
+                    <Bar dataKey="wind" stackId="a" fill="#8B7355" name="Vítr" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="panel">
+                <h3>Měsíční čistý cashflow</h3>
+                <p className="panel-sub">Skok = doběh ESSOX/úvěru, dál čistý zisk</p>
+                <ResponsiveContainer width="100%" height={220}>
+                  <LineChart data={yearly}>
+                    <CartesianGrid stroke="#E5E0D0" strokeDasharray="3 3" />
+                    <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                    <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v) => fmtKcFull(v) + '/měs.'} labelFormatter={(l) => `Rok ${l}`} />
+                    <ReferenceLine y={0} stroke="#1A1A1A" />
+                    <Line type="monotone" dataKey="monthlyCashflow" name="Měsíční CF"
+                      stroke="#1F4A2E" strokeWidth={3} dot={{ fill: '#1F4A2E', r: 4 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="panel">
+                <h3>Detail po letech</h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Rok</th><th>Výnosy</th><th>Splátky</th><th>OPEX</th><th>Čistý CF</th><th>CF/měs.</th><th>Kumul.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {yearly.map(y => (
+                        <tr key={y.year}>
+                          <td>{y.year}</td>
+                          <td>{fmtKc(y.revenue)}</td>
+                          <td style={{ color: 'var(--text-muted)' }}>{fmtKc(y.essoxPayment + y.bankPayment)}</td>
+                          <td style={{ color: 'var(--text-muted)' }}>{fmtKc(y.opex)}</td>
+                          <td style={{ fontWeight: 700, color: y.netCashflow > 0 ? 'var(--positive)' : 'var(--negative)' }}>{fmtKc(y.netCashflow)}</td>
+                          <td style={{ fontWeight: 600, color: y.monthlyCashflow > 0 ? 'var(--positive)' : 'var(--negative)' }}>{fmtKc(y.monthlyCashflow)}</td>
+                          <td style={{ fontWeight: 700, color: y.cumulativeCashflow >= 0 ? 'var(--primary)' : 'var(--negative)' }}>{fmtKc(y.cumulativeCashflow)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="04" />
+      </section>
+
+      {/* ============================================================
+          STR 05 — TECHNOLOGIE (zelená stránka jako v PDF)
+          ============================================================ */}
+      <section className="page tech-page" id="tech">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Technické parametry</span>
+          <h2 className="display" style={{ color: 'white' }}>Model BRES-2400-1250 <em>v detailu</em></h2>
+          <p className="lead">
+            Kontejnerové bateriové úložiště All-in-One s technologií LFP, 6 000+ cykly životnosti, off-grid schopností a venkovním krytím IP54.
+          </p>
+
+          <div className="tech-stats">
+            <div className="tech-stat">
+              <div className="tech-stat-value">1 250 kW</div>
+              <div className="tech-stat-label">Jmenovitý výkon</div>
+            </div>
+            <div className="tech-stat">
+              <div className="tech-stat-value">2 411 kWh</div>
+              <div className="tech-stat-label">Kapacita (10× 241 kWh)</div>
+            </div>
+            <div className="tech-stat">
+              <div className="tech-stat-value">&gt; 6 000</div>
+              <div className="tech-stat-label">Cyklů (100 % DOD / 80 % SOH)</div>
+            </div>
+            <div className="tech-stat">
+              <div className="tech-stat-value">~38 t</div>
+              <div className="tech-stat-label">Hmotnost kontejneru</div>
+            </div>
+          </div>
+
+          <div className="tech-params-grid">
+            <div className="tech-params-section">AC parametry — síťový provoz</div>
+            <div className="tech-param-row"><span>Jmenovitý výstupní výkon</span><span>1 250 kW</span></div>
+            <div className="tech-param-row"><span>Jmenovité síťové napětí</span><span>3W+N+PE · 380/400 V</span></div>
+            <div className="tech-param-row"><span>Rozsah napětí / frekvence</span><span>−15 % ~ +10 % · 50/60 Hz</span></div>
+            <div className="tech-param-row"><span>THD výstupního proudu</span><span>≤ 3 % (jm. výkon)</span></div>
+            <div className="tech-param-row"><span>Účiník (Power factor)</span><span>−0,9 ~ +0,9</span></div>
+            <div className="tech-param-row"><span>Komunikace</span><span>RS485 · LAN · Modbus</span></div>
+
+            <div className="tech-params-section">Parametry baterie</div>
+            <div className="tech-param-row"><span>Typ článků</span><span>LFP (Lithium-železo-fosfát)</span></div>
+            <div className="tech-param-row"><span>Kapacita systému</span><span>2 411,5 kWh</span></div>
+            <div className="tech-param-row"><span>Počet bateriových rozváděčů</span><span>10× 241,1 kWh</span></div>
+            <div className="tech-param-row"><span>Jmen. doba provozu</span><span>2 hod. (variabilní)</span></div>
+            <div className="tech-param-row"><span>Životnost</span><span>&gt; 6 000 cyklů</span></div>
+            <div className="tech-param-row"><span>Účinnost systému</span><span>93 %</span></div>
+
+            <div className="tech-params-section">AC parametry — off-grid</div>
+            <div className="tech-param-row"><span>Jmen. výstupní výkon</span><span>1 250 kW</span></div>
+            <div className="tech-param-row"><span>Max. výstupní výkon</span><span>1 312 kW</span></div>
+            <div className="tech-param-row"><span>Jmen. výstupní napětí</span><span>3W+N+PE · 380/400 V</span></div>
+            <div className="tech-param-row"><span>THD výstupního napětí</span><span>3 % (lineární zátěž)</span></div>
+            <div className="tech-param-row"><span>Přepínání On/Off-grid</span><span>Elektrické ovládání</span></div>
+            <div className="tech-param-row"><span>Stupeň krytí</span><span>IP54 (venkovní)</span></div>
+
+            <div className="tech-params-section">Konstrukce a prostředí</div>
+            <div className="tech-param-row"><span>Rozměry (Š × H × V)</span><span>12 192 × 2 438 × 2 896 mm</span></div>
+            <div className="tech-param-row"><span>Hmotnost</span><span>38 000 kg</span></div>
+            <div className="tech-param-row"><span>Provozní teplota</span><span>−20 °C až +55 °C</span></div>
+            <div className="tech-param-row"><span>Standardní kontejner</span><span>40' HC (lodní formát)</span></div>
+          </div>
+        </div>
+        <PageFooter pageNum="05" />
+      </section>
+
+      {/* ============================================================
+          STR 06 — REALIZACE (harmonogram + záruka + financování)
+          ============================================================ */}
+      <section className="page" id="realizace">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Harmonogram realizace</span>
+          <h2 className="display">Od podpisu smlouvy do <em>uvedení do provozu</em></h2>
+          <p className="lead">
+            Klíčovým milníkem je projekční a inženýringová fáze (vyřízení připojení k DS). Vlastní instalace probíhá v rámci týdnů.
+          </p>
+
+          <div className="timeline">
+            <div className="timeline-step">
+              <div className="timeline-step-num">1</div>
+              <div className="timeline-step-title">Podpis smlouvy</div>
+              <div className="timeline-step-detail">Smluvní podmínky, harmonogram a platební milníky</div>
+              <span className="timeline-step-time">Start</span>
+            </div>
+            <div className="timeline-step">
+              <div className="timeline-step-num">2</div>
+              <div className="timeline-step-title">Projekt a inženýring</div>
+              <div className="timeline-step-detail">DPS, DPSP, vyřízení připojení k distribuční soustavě</div>
+              <span className="timeline-step-time">6–12 měsíců</span>
+            </div>
+            <div className="timeline-step">
+              <div className="timeline-step-num">3</div>
+              <div className="timeline-step-title">Dodání zařízení</div>
+              <div className="timeline-step-detail">Kontejnerové BESS skladem</div>
+              <span className="timeline-step-time">Dohodou</span>
+            </div>
+            <div className="timeline-step">
+              <div className="timeline-step-num">4</div>
+              <div className="timeline-step-title">Instalace na místě</div>
+              <div className="timeline-step-detail">Usazení kontejneru, elektroinstalace AC/DC, testy</div>
+              <span className="timeline-step-time">V rámci týdnů</span>
+            </div>
+            <div className="timeline-step">
+              <div className="timeline-step-num">5</div>
+              <div className="timeline-step-title">Uvedení do provozu</div>
+              <div className="timeline-step-detail">Konfigurace EMS, předání, zaškolení obsluhy</div>
+              <span className="timeline-step-time">Bezprostředně</span>
+            </div>
+          </div>
+
+          <h3 className="display" style={{ fontSize: 22, marginTop: 40, marginBottom: 14 }}>Záruka a servisní podpora</h3>
+          <div className="warranty-grid">
+            <div className="warranty-card dark">
+              <div className="warranty-value">12 let</div>
+              <div className="warranty-label">Záruka baterie<span className="warranty-sub">LFP · nebo 6 000 cyklů</span></div>
+            </div>
+            <div className="warranty-card">
+              <div className="warranty-value">5 let</div>
+              <div className="warranty-label">Záruka střídače<span className="warranty-sub">plná na PCS</span></div>
+            </div>
+            <div className="warranty-card">
+              <div className="warranty-value">2 roky</div>
+              <div className="warranty-label">Trafostanice (VN)<span className="warranty-sub">včetně technologie</span></div>
+            </div>
+            <div className="warranty-card">
+              <div className="warranty-value">24/7</div>
+              <div className="warranty-label">Servisní podpora<span className="warranty-sub">dohled, telefon, vzdáleně</span></div>
+            </div>
+            <div className="warranty-card">
+              <div className="warranty-value">≤ 48 h</div>
+              <div className="warranty-label">Reakční doba<span className="warranty-sub">garantovaná</span></div>
+            </div>
+          </div>
+
+          <h3 className="display" style={{ fontSize: 22, marginTop: 40, marginBottom: 14 }}>Značkové financování ESSOX</h3>
+          <div className="essox-card">
+            <div className="essox-header">
+              <div className="essox-logo">ESSOX</div>
+              <div className="essox-tagline">Jeden proces, jeden partner. Schválení podléhá posouzení bonity společností ESSOX s.r.o.</div>
+            </div>
+            <div className="essox-row">
+              <div className="essox-item">
+                <div className="essox-item-value">od 0 %</div>
+                <div className="essox-item-label">Akontace</div>
+                <div className="essox-item-sub">Bez zálohy</div>
+              </div>
+              <div className="essox-item">
+                <div className="essox-item-value">až 7 let</div>
+                <div className="essox-item-label">Doba splácení</div>
+                <div className="essox-item-sub">Přizpůsobitelná</div>
+              </div>
+              <div className="essox-item">
+                <div className="essox-item-value">5,5 %</div>
+                <div className="essox-item-label">Úrok p.a.</div>
+                <div className="essox-item-sub">Fixní</div>
+              </div>
+              <div className="essox-item">
+                <div className="essox-item-value">0 Kč</div>
+                <div className="essox-item-label">Poplatky</div>
+                <div className="essox-item-sub">Žádné skryté</div>
+              </div>
+              <div className="essox-item">
+                <div className="essox-item-value">směnka</div>
+                <div className="essox-item-label">Zajištění</div>
+                <div className="essox-item-sub">Firemní + aval</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="06" />
+      </section>
+
+      {/* ============================================================
+          STR 07 — METODIKA
+          ============================================================ */}
+      <section className="page" id="method">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Transparentní výpočet</span>
+          <h2 className="display">Jak jsme se k číslům <em>dostali</em></h2>
+          <p className="lead">
+            Žádné odhady. Každý vstup vychází z veřejně dostupných dat ERÚ, OTE, MPO a ČEZ Distribuce. Zde jsou vzorce a primární zdroje.
+          </p>
+
+          <div className="method-grid">
+            <div className="method-item">
+              <h4>Peak Shaving</h4>
+              <p className="method-item-claim">Úspora penále + snížení rezervovaného výkonu</p>
+              <div className="method-formula">
+                Roční úspora = (překročení kW × penále × měsíce)<br/>+ (snížení kW × cena × 12 měsíců)
+              </div>
+              <div className="method-source">
+                Penále NN: <strong>1 683 Kč/kW/měs.</strong> · VN typicky 200–400 Kč/kW/měs.<br/>
+                <a href="https://www.cezdistribuce.cz/cs/pro-zakazniky/potrebuji-vyresit/ceny-a-podminky/ceny-pri-prekroceni-rezervovaneho-prikonu-a-vykonu" target="_blank" rel="noopener">ČEZ Distribuce — ceník překročení</a>
+              </div>
+            </div>
+
+            <div className="method-item">
+              <h4>Energetická arbitráž</h4>
+              <p className="method-item-claim">Nákup levně, využití draho — denní spread spotu</p>
+              <div className="method-formula">
+                Roční výnos = kapacita × % arb. × η(0,93) ×<br/>cyklů × (cena_špička − cena_noc)
+              </div>
+              <div className="method-source">
+                Průměr OTE 2025: <strong>2 000–2 300 Kč/MWh</strong>, denní spread 1,5–3 Kč/kWh<br/>
+                <a href="https://www.ote-cr.cz/cs/kratkodobe-trhy/elektrina/denni-trh" target="_blank" rel="noopener">OTE — Denní trh</a>
+              </div>
+            </div>
+
+            <div className="method-item">
+              <h4>EV nabíjení (s růstem v čase)</h4>
+              <p className="method-item-claim">Roste s adopcí elektromobility v ČR</p>
+              <div className="method-formula">
+                Rok N = kapacita × % EV × η × 365 ×<br/>(využití × (1+růst)^(N−1)) × marže<br/>× inflace × degradace
+              </div>
+              <div className="method-source">
+                ČR 2025: <strong>60 000 EV, +30–60 % YoY</strong><br/>
+                <a href="https://www.cistadoprava.cz/" target="_blank" rel="noopener">cistadoprava.cz</a> · <a href="https://mpo.gov.cz/assets/cz/energetika/strategicke-a-koncepcni-dokumenty/narodni-akcni-plan-pro-chytre-site/2024/6/Elektromobilita-predikce-aktualizace.pdf" target="_blank" rel="noopener">MPO predikce do 2045</a>
+              </div>
+            </div>
+
+            <div className="method-item">
+              <h4>FVE / vítr přetoky</h4>
+              <p className="method-item-claim">Hodnotový rozdíl výkup vs vlastní spotřeba</p>
+              <div className="method-formula">
+                Roční výnos = denní přetok × 365 ×<br/>(cena vlastní − cena výkupu)
+              </div>
+              <div className="method-source">
+                Aktuální výkup: <strong>~0,5 Kč/kWh</strong> · Cena dodávky VN 3,5–5 Kč/kWh<br/>
+                Ceník ČEZ Prodej · ERÚ cenové rozhodnutí 12/2025
+              </div>
+            </div>
+
+            <div className="method-item">
+              <h4>Financování (anuita)</h4>
+              <p className="method-item-claim">Standardní PMT vzorec pro měsíční splátku</p>
+              <div className="method-formula">
+                Splátka = (PV × r) / (1 − (1+r)^(−n))<br/>kde r = sazba / 12, n = let × 12
+              </div>
+              <div className="method-source">
+                ESSOX: 5,5 % p.a. / 7 let / 0 % akontace<br/>
+                Úvěr: 8 % p.a. / 5 let<br/>
+                <em>Skutečné podmínky stanoví ESSOX a banka.</em>
+              </div>
+            </div>
+
+            <div className="method-item">
+              <h4>Degradace a inflace</h4>
+              <p className="method-item-claim">Realistický vývoj kapacity a cen v čase</p>
+              <div className="method-formula">
+                Degradace LFP: 1,5 % ročně<br/>→ po 15 letech ~80 % SOH<br/>Inflace energií: 3 % p.a. dlouhodobě
+              </div>
+              <div className="method-source">
+                LFP technologie · 6 000+ cyklů (100 % DOD / 80 % SOH)<br/>
+                Distribuční ceny rostou 5–7 % p.a.
+              </div>
+            </div>
+          </div>
+        </div>
+        <PageFooter pageNum="07" />
+      </section>
+
+      {/* ============================================================
+          STR 08 — ZÁVĚR (cena, kontakt)
+          ============================================================ */}
+      <section className="page closing-page" id="closing">
+        <PageHeader />
+        <div className="page-body">
+          <span className="eyebrow-label">Závěr nabídky</span>
+          <h2 className="display">Energetická flexibilita <em>na klíč</em></h2>
+          <p className="lead">
+            Implementace BRES-2400-1250 integruje pokročilé řízení toků energie do infrastruktury areálu — maximalizuje využití lokálních zdrojů, zvyšuje energetickou soběstačnost a připravuje podnik na budoucí požadavky moderní energetiky.
+          </p>
+
+          <h3 className="display" style={{ fontSize: 18, marginTop: 32, marginBottom: 12 }}>Zařízení je připraveno pro</h3>
+          <div className="readiness-grid">
+            <div className="readiness-item">
+              <div className="readiness-icon">✓</div>
+              <div className="readiness-label">Komerční i interní provoz</div>
+            </div>
+            <div className="readiness-item">
+              <div className="readiness-icon">☀</div>
+              <div className="readiness-label">Integraci s FVE</div>
+            </div>
+            <div className="readiness-item">
+              <div className="readiness-icon">⚡</div>
+              <div className="readiness-label">Obchodování s energií</div>
+            </div>
+            <div className="readiness-item">
+              <div className="readiness-icon">∞</div>
+              <div className="readiness-label">Zapojení do flexibility</div>
+            </div>
+          </div>
+
+          <div className="closing-price">
+            <div>
+              <div className="closing-price-label">Vaše interaktivní kalkulace</div>
+              <div className="closing-price-title">BESS BRES-2400-1250 · {inputs.bessCapacityKWh.toLocaleString('cs-CZ')} kWh · {inputs.bessPowerKW.toLocaleString('cs-CZ')} kW</div>
+              <div style={{ marginTop: 14, fontSize: 13, opacity: 0.7, lineHeight: 1.6 }}>
+                Návratnost vlastních zdrojů: <strong style={{color: 'var(--accent)'}}>{fmtYears(summary.paybackYear)}</strong> ·
+                Měsíční cashflow (1. rok): <strong style={{color: 'var(--accent)'}}>{fmtKc(summary.yearOneNetMonthly)}</strong> ·
+                Zisk za {inputs.analysisHorizon} let: <strong style={{color: 'var(--accent)'}}>{fmtKc(summary.totalProfit)}</strong>
+              </div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div className="closing-price-value">{fmtKc(summary.baseInvestment)}</div>
+              <div className="closing-price-vat">bez DPH · investice na klíč</div>
+            </div>
+            <div className="closing-disclaimer">
+              Ceny bez DPH · platnost nabídky 30 dní · položky závislé na místním šetření (stavební a zemní práce, projekční práce) budou upřesněny po obhlídce. Kalkulace návratnosti je orientační, vychází z veřejně dostupných dat ERÚ, OTE, MPO a ČEZ Distribuce a interaktivně nastavených parametrů.
+            </div>
+          </div>
+
+          <div className="contact-block">
+            <div className="contact-avatar">MB</div>
+            <div>
+              <div className="contact-label">Kontaktní osoba pro tuto nabídku</div>
+              <div className="contact-name">Miroslav Beneš</div>
+              <div className="contact-details">
+                <strong>+420 602 118 299</strong> · miroslav.benes@freeheating.cz · freeheating.cz
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="page-footer">
+          <span>FREE HEATING S.R.O. · IČO 09087087 · NA PERŠTÝNĚ 342/1, 110 00 PRAHA</span>
+          <span className="page-num">08</span>
+        </div>
+      </section>
+
+      <div style={{ height: 40 }}></div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
