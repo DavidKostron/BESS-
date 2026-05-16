@@ -4,1150 +4,968 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>BESS Kalkulačka návratnosti</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
-<script src="https://unpkg.com/prop-types@15.8.1/prop-types.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <style>
-  html, body { margin: 0; padding: 0; }
-  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
-  input[type="range"] { width: 100%; cursor: pointer; }
+  :root {
+    --bg: #F4F1E8;
+    --card: #FFFFFF;
+    --primary: #1F4A2E;
+    --primary-dark: #163821;
+    --accent: #6FA86C;
+    --accent-light: #D9E8D5;
+    --text: #1A1A1A;
+    --text-muted: #5C5C5C;
+    --border: #E5E0D0;
+    --positive: #3A8246;
+    --negative: #B33A3A;
+    --amber: #D4A93C;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: white; padding: 32px 36px; border-radius: 12px; margin-bottom: 20px;
+  }
+  .header-eyebrow {
+    font-size: 11px; letter-spacing: 0.15em; opacity: 0.7;
+    text-transform: uppercase; margin-bottom: 8px; font-weight: 600;
+  }
+  .header h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+  .header p { font-size: 14px; opacity: 0.85; margin: 8px 0 0; max-width: 700px; }
+
+  /* KPI Cards */
+  .kpi-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kpi-card {
+    flex: 1; min-width: 200px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 20px;
+  }
+  .kpi-card.featured { background: var(--primary); color: white; border: none; }
+  .kpi-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600; opacity: 0.7; margin-bottom: 6px;
+  }
+  .kpi-value {
+    font-size: 26px; font-weight: 800; letter-spacing: -0.02em;
+    line-height: 1.1; font-variant-numeric: tabular-nums;
+  }
+  .kpi-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+
+  /* Layout */
+  .main { display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 1024px) { .main { grid-template-columns: 1fr; } }
+
+  /* Sekce */
+  .section {
+    background: var(--card); border-radius: 12px; padding: 20px;
+    margin-bottom: 16px; border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 0 0 14px;
+  }
+  .section-title {
+    font-size: 14px; font-weight: 700; color: var(--primary);
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  .badge {
+    background: var(--accent-light); color: var(--primary);
+    padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Slider */
+  .slider-block { margin-bottom: 18px; }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 6px;
+  }
+  .slider-label { font-size: 12px; font-weight: 600; }
+  .slider-value {
+    font-size: 13px; font-weight: 700; color: var(--primary);
+    background: var(--accent-light); padding: 2px 9px; border-radius: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+  input[type="range"] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+  input[type="number"] {
+    width: 100%; padding: 7px 10px; border: 1px solid var(--border);
+    border-radius: 4px; font-size: 13px; font-family: inherit; background: white;
+  }
+  .help { font-size: 10.5px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+  .help em { font-style: italic; }
+  .num-row { display: flex; gap: 8px; align-items: center; }
+  .num-row .unit { font-size: 12px; color: var(--text-muted); }
+
+  /* Preset buttons */
+  .presets { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .preset-btn {
+    padding: 5px 11px; font-size: 11px; font-weight: 600;
+    background: transparent; color: var(--primary);
+    border: 1.5px solid var(--primary); border-radius: 16px;
+    cursor: pointer; font-family: inherit;
+  }
+  .preset-btn.active { background: var(--primary); color: white; }
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  /* Panels */
+  .panel {
+    background: var(--card); border-radius: 12px; padding: 24px;
+    margin-bottom: 16px; border: 1px solid var(--border);
+  }
+  .panel-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .panel h3 {
+    margin: 0; font-size: 16px; font-weight: 700;
+    color: var(--primary); letter-spacing: -0.01em;
+  }
+  .panel-total {
+    font-size: 20px; font-weight: 800; color: var(--primary);
+    font-variant-numeric: tabular-nums;
+  }
+  .panel-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 18px; }
+
+  /* Breakdown bars */
+  .breakdown-row { margin-bottom: 12px; }
+  .breakdown-head-row {
+    display: flex; justify-content: space-between; font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .breakdown-name { font-weight: 600; }
+  .breakdown-name .dot {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 2px; margin-right: 8px; vertical-align: middle;
+  }
+  .breakdown-value { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .breakdown-pct { color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+  .breakdown-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+  .breakdown-bar-fill { height: 100%; transition: width 0.3s; }
+
+  /* Tabulka */
+  table { width: 100%; font-size: 12px; border-collapse: collapse; }
+  thead tr { background: var(--bg); color: var(--primary); }
+  th { padding: 9px 6px; text-align: right; font-weight: 700; }
+  th:first-child { text-align: left; }
+  td { padding: 7px 6px; text-align: right; font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--border); }
+  td:first-child { text-align: left; font-weight: 600; }
+
+  /* SVG */
+  .chart-wrap { width: 100%; }
+  .chart-wrap svg { width: 100%; height: auto; display: block; }
+
+  /* Závěr */
+  .closing {
+    background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+    color: white; border-radius: 12px; padding: 28px;
+  }
+  .closing-label {
+    font-size: 11px; letter-spacing: 0.15em; opacity: 0.7;
+    text-transform: uppercase; margin-bottom: 14px; font-weight: 600;
+  }
+  .closing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .closing-item-label { font-size: 11px; opacity: 0.7; margin-bottom: 4px; }
+  .closing-item-value { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .closing-item-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+  .closing-item-value.accent { color: #A8D9A0; }
+  .closing-disclaimer {
+    margin-top: 24px; padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    font-size: 11px; opacity: 0.7; line-height: 1.5;
+  }
+
+  .warning-box {
+    background: #FFF4E5; border: 1px solid var(--amber);
+    padding: 8px 10px; border-radius: 4px;
+    font-size: 11px; color: #8B6B1F; margin-top: 8px;
+  }
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel" data-presets="react">
-const { useState, useMemo } = React;
-const { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, ComposedChart, Area } = Recharts;
 
+<div class="wrap">
 
-// ============================================================================
-// BESS NÁVRATNOSTI – KALKULAČKA
-// Barvy: tmavá zelená (en-c.cz / freeheating) + krémové pozadí
-// ============================================================================
+  <div class="header">
+    <div class="header-eyebrow">Kalkulačka návratnosti</div>
+    <h1>Bateriové úložiště BESS</h1>
+    <p>Spočítejte si přesný měsíční cashflow a návratnost. Čtyři zdroje příjmů, financování ESSOX + úvěr, projekce na 15 let. Všechny vstupy lze měnit.</p>
+  </div>
 
-const COLORS = {
-  bg: '#F4F1E8',          // krémové pozadí
-  card: '#FFFFFF',
-  primary: '#1F4A2E',     // tmavá zelená
-  primaryDark: '#163821',
-  accent: '#6FA86C',      // svěží zelená pro akcenty
-  accentLight: '#D9E8D5',
-  text: '#1A1A1A',
-  textMuted: '#5C5C5C',
-  border: '#E5E0D0',
-  positive: '#3A8246',
-  negative: '#B33A3A',
-  amber: '#D4A93C',
+  <div class="kpi-row">
+    <div class="kpi-card featured">
+      <div class="kpi-label">Měsíční CASHFLOW (1. rok)</div>
+      <div class="kpi-value" id="kpi-monthly">—</div>
+      <div class="kpi-sub" id="kpi-monthly-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Návratnost</div>
+      <div class="kpi-value" id="kpi-payback">—</div>
+      <div class="kpi-sub" id="kpi-payback-sub">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Zisk za horizont</div>
+      <div class="kpi-value" id="kpi-profit">—</div>
+      <div class="kpi-sub">po všech splátkách a OPEX</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Měsíční splátka</div>
+      <div class="kpi-value" id="kpi-payment">—</div>
+      <div class="kpi-sub" id="kpi-payment-sub">—</div>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <div id="inputs"></div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Skladba výnosů — 1. rok</h3>
+          <div class="panel-total" id="rev-total">—</div>
+        </div>
+        <div class="panel-sub">Z čeho se skládá roční výnos</div>
+        <div id="breakdown"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Kumulativní cashflow</h3>
+        <div class="panel-sub">Kdy se investice dostane do plusu</div>
+        <div class="chart-wrap" id="chart-cumulative"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Roční výnosy podle zdroje</h3>
+        <div class="panel-sub">Stack: peak shaving + arbitráž + EV + FVE + vítr</div>
+        <div class="chart-wrap" id="chart-revenue"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Měsíční čistý cashflow</h3>
+        <div class="panel-sub">Skok po splacení = doběh ESSOX/úvěru</div>
+        <div class="chart-wrap" id="chart-monthly"></div>
+      </div>
+
+      <div class="panel">
+        <h3>Detail po letech</h3>
+        <div style="overflow-x:auto;margin-top:14px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Rok</th><th>Výnosy</th><th>Splátky</th><th>OPEX</th>
+                <th>Čistý CF</th><th>CF/měs.</th><th>Kumul.</th>
+              </tr>
+            </thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="closing">
+        <div class="closing-label">Závěr investice</div>
+        <div class="closing-grid">
+          <div>
+            <div class="closing-item-label">INVESTICE CELKEM</div>
+            <div class="closing-item-value" id="sum-investment">—</div>
+            <div class="closing-item-sub" id="sum-investment-sub">—</div>
+          </div>
+          <div>
+            <div class="closing-item-label">VÝNOSY ZA HORIZONT</div>
+            <div class="closing-item-value" id="sum-revenue">—</div>
+            <div class="closing-item-sub" id="sum-revenue-sub">—</div>
+          </div>
+          <div>
+            <div class="closing-item-label">ČISTÝ ZISK</div>
+            <div class="closing-item-value accent" id="sum-profit">—</div>
+          </div>
+          <div>
+            <div class="closing-item-label">NÁVRATNOST</div>
+            <div class="closing-item-value accent" id="sum-payback">—</div>
+          </div>
+        </div>
+        <div class="closing-disclaimer">
+          Kalkulace je orientační. Vychází z dat ERÚ, OTE, MPO a ČEZ Distribuce (penále NN 1 683 Kč/kW/měs., spotová cena 2025 cca 2 000–2 300 Kč/MWh, růst EV v ČR +30 % YoY). Skutečné podmínky financování stanoví ESSOX s.r.o. a banka.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:24px;font-size:11px;color:var(--text-muted);">
+    BESS kalkulačka návratnosti · free heating s.r.o. · Financování ESSOX · 2026
+  </div>
+</div>
+
+<script>
+"use strict";
+
+var state = {
+  bessCapacityKWh: 2411, bessPowerKW: 1250, baseInvestment: 17550000,
+  ownEquityPct: 0, essoxPct: 70, essoxRate: 5.5, essoxYears: 7,
+  bankPct: 30, bankRate: 8.0, bankYears: 5,
+  reservedPowerKW: 800, peakOverrunKW: 250, overrunMonths: 6,
+  penaltyRate: 350, reservedReductionKW: 200, reservedPriceRate: 195,
+  arbitrageCapacityPct: 60, buyPrice: 1.5, sellPrice: 3.2, arbitrageCyclesPerYear: 320,
+  evCapacityPct: 15, evPrice: 11, evEnergyCostKWh: 1.8,
+  evUtilizationStart: 35, evGrowthPerYear: 25,
+  fveInstalledKWp: 0, fveSurplusDaily: 0, fveBuybackPrice: 0.5, fveSelfUsePrice: 4.5,
+  windInstalledKW: 0, windSurplusDaily: 0, windBuybackPrice: 0.5, windSelfUsePrice: 4.5,
+  opexPerYear: 80000, degradationPerYear: 1.5, electricityInflation: 3, analysisHorizon: 15,
+  businessPreset: "strojirna"
 };
 
-// Defaultní hodnoty vychází z nabídky TAMDA ÚSTÍ + veřejných statistik
-const DEFAULTS = {
-  // Investice
-  bessCapacityKWh: 2411,
-  bessPowerKW: 1250,
-  pricePerKWh: 7280, // 17,55M / 2411 kWh ≈ 7280 Kč/kWh včetně všeho
-  baseInvestment: 17550000,
-
-  // Financování
-  ownEquityPct: 0,       // % vlastních prostředků
-  essoxPct: 70,          // % ESSOX
-  essoxRate: 5.5,
-  essoxYears: 7,
-  bankPct: 30,           // % bankovní úvěr
-  bankRate: 8.0,
-  bankYears: 5,
-
-  // 1) Peak shaving
-  reservedPowerKW: 800,        // rezervovaný výkon
-  peakOverrunKW: 250,          // průměrné překročení v kW
-  overrunMonths: 6,            // počet měsíců s překročením/rok
-  penaltyRate: 350,            // Kč/kW/měsíc (VN typicky 200-400, NN 1683)
-  reservedReductionKW: 200,    // o kolik snížím rezervovaný výkon
-  reservedPriceRate: 195,      // Kč/kW/měsíc za rezervovaný výkon (VN)
-
-  // 2) Arbitráž
-  arbitrageCapacityPct: 60,    // % kapacity BESS pro arbitráž
-  buyPrice: 1.5,               // Kč/kWh nákup v noci
-  sellPrice: 3.2,              // Kč/kWh využití ve špičce
-  arbitrageCyclesPerYear: 320, // počet cyklů ročně využitých pro arbitráž
-
-  // 3) EV nabíjení
-  evCapacityPct: 15,           // % kapacity BESS pro nabíjení EV
-  evPrice: 11,                 // Kč/kWh prodejní cena
-  evEnergyCostKWh: 1.8,        // Kč/kWh náklad na energii pro nabíjení
-  evUtilizationStart: 35,      // % využití nabíječky nyní
-  evGrowthPerYear: 25,         // % růst využití ročně
-
-  // 4) FVE přetoky
-  fveInstalledKWp: 0,          // instalovaný výkon FVE
-  fveSurplusDaily: 0,          // průměrný denní přetok v kWh
-  fveBuybackPrice: 0.5,        // Kč/kWh výkup
-  fveSelfUsePrice: 4.5,        // Kč/kWh použití místo nákupu
-
-  // 5) Větrná elektrárna
-  windInstalledKW: 0,
-  windSurplusDaily: 0,
-  windBuybackPrice: 0.5,
-  windSelfUsePrice: 4.5,
-
-  // Provozní náklady
-  opexPerYear: 80000,          // servis, monitoring, pojištění
-  degradationPerYear: 1.5,     // % degradace baterie ročně
-  electricityInflation: 3,     // % růst cen energií ročně
-  analysisHorizon: 15,         // let analýzy
+var PRESETS = {
+  truhlarna: { label: "Truhlárna", reservedPowerKW: 250, peakOverrunKW: 80, overrunMonths: 6, penaltyRate: 350, reservedReductionKW: 50, evCapacityPct: 10, arbitrageCapacityPct: 70 },
+  strojirna: { label: "Strojírna", reservedPowerKW: 800, peakOverrunKW: 250, overrunMonths: 8, penaltyRate: 350, reservedReductionKW: 200, evCapacityPct: 15, arbitrageCapacityPct: 60 },
+  potravinarstvi: { label: "Potravinářství", reservedPowerKW: 500, peakOverrunKW: 150, overrunMonths: 10, penaltyRate: 350, reservedReductionKW: 100, evCapacityPct: 10, arbitrageCapacityPct: 65 },
+  logistika: { label: "Logistika + kamiony", reservedPowerKW: 400, peakOverrunKW: 100, overrunMonths: 4, penaltyRate: 350, reservedReductionKW: 80, evCapacityPct: 50, evPrice: 17, arbitrageCapacityPct: 30 },
+  plast: { label: "Plastikářství", reservedPowerKW: 700, peakOverrunKW: 200, overrunMonths: 9, penaltyRate: 350, reservedReductionKW: 150, evCapacityPct: 10, arbitrageCapacityPct: 65 }
 };
 
-// ============================================================================
-// VÝPOČTY
-// ============================================================================
+var SIZING = {
+  small: { label: "500 kWh", bessCapacityKWh: 500, bessPowerKW: 250, baseInvestment: 4600000 },
+  medium: { label: "1 200 kWh", bessCapacityKWh: 1200, bessPowerKW: 600, baseInvestment: 9500000 },
+  standard: { label: "2 411 kWh", bessCapacityKWh: 2411, bessPowerKW: 1250, baseInvestment: 17550000 },
+  large: { label: "4 000 kWh", bessCapacityKWh: 4000, bessPowerKW: 2000, baseInvestment: 28500000 }
+};
 
-function pmt(rate, nper, pv) {
-  if (rate === 0) return pv / nper;
-  const r = rate / 12 / 100;
-  const n = nper * 12;
+function pmt(rate, years, pv) {
+  if (rate === 0) return pv / (years * 12);
+  var r = rate / 12 / 100;
+  var n = years * 12;
   return (pv * r) / (1 - Math.pow(1 + r, -n));
 }
 
-function calculateProjections(inputs) {
-  const {
-    bessCapacityKWh, bessPowerKW, baseInvestment,
-    ownEquityPct, essoxPct, essoxRate, essoxYears, bankPct, bankRate, bankYears,
-    reservedPowerKW, peakOverrunKW, overrunMonths, penaltyRate,
-    reservedReductionKW, reservedPriceRate,
-    arbitrageCapacityPct, buyPrice, sellPrice, arbitrageCyclesPerYear,
-    evCapacityPct, evPrice, evEnergyCostKWh, evUtilizationStart, evGrowthPerYear,
-    fveInstalledKWp, fveSurplusDaily, fveBuybackPrice, fveSelfUsePrice,
-    windInstalledKW, windSurplusDaily, windBuybackPrice, windSelfUsePrice,
-    opexPerYear, degradationPerYear, electricityInflation, analysisHorizon,
-  } = inputs;
+function compute() {
+  var x = state;
+  var essoxAmount = x.baseInvestment * (x.essoxPct / 100);
+  var bankAmount = x.baseInvestment * (x.bankPct / 100);
+  var ownAmount = x.baseInvestment * (x.ownEquityPct / 100);
+  var essoxMonthly = essoxAmount > 0 ? pmt(x.essoxRate, x.essoxYears, essoxAmount) : 0;
+  var bankMonthly = bankAmount > 0 ? pmt(x.bankRate, x.bankYears, bankAmount) : 0;
 
-  // Investice a financování
-  const essoxAmount = baseInvestment * (essoxPct / 100);
-  const bankAmount = baseInvestment * (bankPct / 100);
-  const ownAmount = baseInvestment * (ownEquityPct / 100);
+  var peakPenalty = x.peakOverrunKW * x.penaltyRate * x.overrunMonths;
+  var reservedSavings = x.reservedReductionKW * x.reservedPriceRate * 12;
+  var peakShavingYear = peakPenalty + reservedSavings;
 
-  const essoxMonthly = essoxAmount > 0 ? pmt(essoxRate, essoxYears, essoxAmount) : 0;
-  const bankMonthly = bankAmount > 0 ? pmt(bankRate, bankYears, bankAmount) : 0;
+  var arbUsable = x.bessCapacityKWh * (x.arbitrageCapacityPct / 100) * 0.93;
+  var arbMargin = x.sellPrice - x.buyPrice;
+  var arbitrageYear = arbUsable * x.arbitrageCyclesPerYear * arbMargin;
 
-  // === 1) PEAK SHAVING (roční úspora) ===
-  // Penále za překročení rezervovaného výkonu
-  const penaltySavingsYear = peakOverrunKW * penaltyRate * overrunMonths;
-  // Snížení rezervovaného výkonu (díky tomu, že BESS pokryje špičky)
-  const reservedReductionSavingsYear = reservedReductionKW * reservedPriceRate * 12;
-  const peakShavingYear = penaltySavingsYear + reservedReductionSavingsYear;
+  var evUsable = x.bessCapacityKWh * (x.evCapacityPct / 100) * 0.93;
+  var evMargin = x.evPrice - x.evEnergyCostKWh;
+  var evYearBase = evUsable * 365 * (x.evUtilizationStart / 100) * evMargin;
 
-  // === 2) ARBITRÁŽ ===
-  // Využitelná kapacita pro arbitráž
-  const arbitrageUsableKWh = bessCapacityKWh * (arbitrageCapacityPct / 100) * 0.93; // η
-  const arbitrageMarginPerKWh = sellPrice - buyPrice;
-  const arbitrageYear = arbitrageUsableKWh * arbitrageCyclesPerYear * arbitrageMarginPerKWh;
+  var fveYear = x.fveSurplusDaily * 365 * (x.fveSelfUsePrice - x.fveBuybackPrice);
+  var windYear = x.windSurplusDaily * 365 * (x.windSelfUsePrice - x.windBuybackPrice);
+  var totalY1 = peakShavingYear + arbitrageYear + evYearBase + fveYear + windYear;
 
-  // === 3) EV NABÍJENÍ (rok 1, roste v čase) ===
-  const evUsableKWh = bessCapacityKWh * (evCapacityPct / 100) * 0.93;
-  // Předpoklad: kolikrát denně se EV kapacita "obrátí" závisí na využití
-  const evMarginPerKWh = evPrice - evEnergyCostKWh;
-  // evUtilizationStart % znamená % dnů v roce, kdy se kapacita plně využije
-  const evYearBase = evUsableKWh * 365 * (evUtilizationStart / 100) * evMarginPerKWh;
+  var yearly = [];
+  var cumulative = -ownAmount;
 
-  // === 4) FVE PŘETOKY ===
-  const fveUpliftPerKWh = fveSelfUsePrice - fveBuybackPrice;
-  const fveYear = fveSurplusDaily * 365 * fveUpliftPerKWh;
-
-  // === 5) VĚTRNÁ ELEKTRÁRNA ===
-  const windUpliftPerKWh = windSelfUsePrice - windBuybackPrice;
-  const windYear = windSurplusDaily * 365 * windUpliftPerKWh;
-
-  // === HOTÝ ROK 1 ===
-  const totalYearOneRevenue = peakShavingYear + arbitrageYear + evYearBase + fveYear + windYear;
-
-  // === PROJEKCE PO LETECH ===
-  const yearly = [];
-  let cumulativeCashflow = -ownAmount; // počáteční investice z vlastních
-
-  for (let year = 1; year <= analysisHorizon; year++) {
-    // Degradace baterie
-    const degradationFactor = Math.pow(1 - degradationPerYear / 100, year - 1);
-    // Inflace energií
-    const inflationFactor = Math.pow(1 + electricityInflation / 100, year - 1);
-
-    // Růst využití EV (sigmoidálně omezeno na 95%)
-    const evUtilizationYear = Math.min(95, evUtilizationStart * Math.pow(1 + evGrowthPerYear / 100, year - 1));
-    const evYearActual = evUsableKWh * 365 * (evUtilizationYear / 100) * evMarginPerKWh * inflationFactor * degradationFactor;
-
-    const peakYearActual = peakShavingYear * inflationFactor;
-    const arbitrageYearActual = arbitrageYear * inflationFactor * degradationFactor;
-    const fveYearActual = fveYear * inflationFactor;
-    const windYearActual = windYear * inflationFactor;
-
-    const revenue = peakYearActual + arbitrageYearActual + evYearActual + fveYearActual + windYearActual;
-
-    // Splátky aktivní jen dokud se splácí
-    const essoxAnnual = year <= essoxYears ? essoxMonthly * 12 : 0;
-    const bankAnnual = year <= bankYears ? bankMonthly * 12 : 0;
-    const opex = opexPerYear * inflationFactor;
-
-    const netCashflow = revenue - essoxAnnual - bankAnnual - opex;
-    cumulativeCashflow += netCashflow;
-
+  for (var year = 1; year <= x.analysisHorizon; year++) {
+    var deg = Math.pow(1 - x.degradationPerYear / 100, year - 1);
+    var inf = Math.pow(1 + x.electricityInflation / 100, year - 1);
+    var evUtil = Math.min(95, x.evUtilizationStart * Math.pow(1 + x.evGrowthPerYear / 100, year - 1));
+    var evY = evUsable * 365 * (evUtil / 100) * evMargin * inf * deg;
+    var peakY = peakShavingYear * inf;
+    var arbY = arbitrageYear * inf * deg;
+    var fveY = fveYear * inf;
+    var windY = windYear * inf;
+    var revenue = peakY + arbY + evY + fveY + windY;
+    var essoxA = year <= x.essoxYears ? essoxMonthly * 12 : 0;
+    var bankA = year <= x.bankYears ? bankMonthly * 12 : 0;
+    var opex = x.opexPerYear * inf;
+    var netCF = revenue - essoxA - bankA - opex;
+    cumulative += netCF;
     yearly.push({
-      year,
-      revenue: Math.round(revenue),
-      peakShaving: Math.round(peakYearActual),
-      arbitrage: Math.round(arbitrageYearActual),
-      ev: Math.round(evYearActual),
-      fve: Math.round(fveYearActual),
-      wind: Math.round(windYearActual),
-      essoxPayment: Math.round(essoxAnnual),
-      bankPayment: Math.round(bankAnnual),
-      opex: Math.round(opex),
-      netCashflow: Math.round(netCashflow),
-      cumulativeCashflow: Math.round(cumulativeCashflow),
-      monthlyCashflow: Math.round(netCashflow / 12),
+      year: year, revenue: Math.round(revenue),
+      peakShaving: Math.round(peakY), arbitrage: Math.round(arbY),
+      ev: Math.round(evY), fve: Math.round(fveY), wind: Math.round(windY),
+      essoxPayment: Math.round(essoxA), bankPayment: Math.round(bankA),
+      opex: Math.round(opex), netCashflow: Math.round(netCF),
+      cumulativeCashflow: Math.round(cumulative),
+      monthlyCashflow: Math.round(netCF / 12)
     });
   }
 
-  // Návratnost (kdy se kumul. CF dostane do plusu)
-  let paybackYear = null;
-  for (let i = 0; i < yearly.length; i++) {
+  var paybackYear = null;
+  for (var i = 0; i < yearly.length; i++) {
     if (yearly[i].cumulativeCashflow >= 0) {
-      // Lineární interpolace pro přesnější odhad
-      if (i === 0) {
-        paybackYear = yearly[i].cumulativeCashflow / yearly[i].netCashflow;
-      } else {
-        const prevCum = yearly[i - 1].cumulativeCashflow;
-        const thisCum = yearly[i].cumulativeCashflow;
-        const fraction = -prevCum / (thisCum - prevCum);
-        paybackYear = (i) + fraction;
+      if (i === 0) paybackYear = yearly[i].cumulativeCashflow / yearly[i].netCashflow;
+      else {
+        var prev = yearly[i - 1].cumulativeCashflow;
+        var cur = yearly[i].cumulativeCashflow;
+        paybackYear = i + (-prev / (cur - prev));
       }
       break;
     }
   }
 
-  // ROI a IRR (zjednodušeně)
-  const totalNetCashflow = yearly[yearly.length - 1].cumulativeCashflow + ownAmount;
-  const totalRevenue = yearly.reduce((s, y) => s + y.revenue, 0);
-  const totalCosts = yearly.reduce((s, y) => s + y.essoxPayment + y.bankPayment + y.opex, 0);
-  const roi = ownAmount > 0 ? ((totalNetCashflow - ownAmount) / ownAmount) * 100 : null;
+  var totalNet = yearly[yearly.length - 1].cumulativeCashflow + ownAmount;
+  var totalRevenue = 0, totalCosts = 0;
+  for (var j = 0; j < yearly.length; j++) {
+    totalRevenue += yearly[j].revenue;
+    totalCosts += yearly[j].essoxPayment + yearly[j].bankPayment + yearly[j].opex;
+  }
 
   return {
-    yearly,
+    yearly: yearly,
     summary: {
-      baseInvestment,
-      ownAmount,
-      essoxAmount,
-      bankAmount,
-      essoxMonthly: Math.round(essoxMonthly),
-      bankMonthly: Math.round(bankMonthly),
+      baseInvestment: x.baseInvestment,
+      ownAmount: ownAmount, essoxAmount: essoxAmount, bankAmount: bankAmount,
+      essoxMonthly: Math.round(essoxMonthly), bankMonthly: Math.round(bankMonthly),
       totalMonthlyPayment: Math.round(essoxMonthly + bankMonthly),
-      yearOneRevenue: Math.round(totalYearOneRevenue),
-      yearOneMonthly: Math.round(totalYearOneRevenue / 12),
+      yearOneRevenue: Math.round(totalY1),
       yearOneNetMonthly: Math.round(yearly[0].monthlyCashflow),
       peakShavingYear: Math.round(peakShavingYear),
       arbitrageYear: Math.round(arbitrageYear),
       evYearBase: Math.round(evYearBase),
       fveYear: Math.round(fveYear),
       windYear: Math.round(windYear),
-      paybackYear,
+      paybackYear: paybackYear,
       totalRevenue: Math.round(totalRevenue),
       totalCosts: Math.round(totalCosts),
-      totalProfit: Math.round(totalNetCashflow - ownAmount),
-      roi,
+      totalProfit: Math.round(totalNet - ownAmount)
     }
   };
 }
 
-// ============================================================================
-// FORMÁTOVÁNÍ
-// ============================================================================
-
-const fmtKc = (n) => {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  const abs = Math.abs(n);
-  if (abs >= 1000000) return `${(n / 1000000).toFixed(2).replace('.', ',')} mil. Kč`;
-  if (abs >= 10000) return `${Math.round(n / 1000).toLocaleString('cs-CZ')} tis. Kč`;
-  return `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
-};
-const fmtKcFull = (n) => {
-  if (n === null || n === undefined || isNaN(n)) return '—';
-  return `${Math.round(n).toLocaleString('cs-CZ')} Kč`;
-};
-const fmtPct = (n) => `${n.toFixed(1).replace('.', ',')} %`;
-const fmtYears = (n) => n === null ? 'nenastane v horizontu' : `${n.toFixed(1).replace('.', ',')} let`;
-
-// ============================================================================
-// UI KOMPONENTY
-// ============================================================================
-
-function Slider({ label, value, onChange, min, max, step, unit, help, examples }) {
-  return (
-    <div style={{ marginBottom: '20px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px' }}>
-        <label style={{ fontSize: '13px', fontWeight: 600, color: COLORS.text }}>{label}</label>
-        <span style={{
-          fontSize: '14px',
-          fontWeight: 700,
-          color: COLORS.primary,
-          background: COLORS.accentLight,
-          padding: '2px 10px',
-          borderRadius: '4px',
-          fontVariantNumeric: 'tabular-nums',
-        }}>
-          {typeof value === 'number' ? value.toLocaleString('cs-CZ') : value} {unit}
-        </span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        style={{
-          width: '100%',
-          accentColor: COLORS.primary,
-          cursor: 'pointer',
-        }}
-      />
-      {(help || examples) && (
-        <div style={{ fontSize: '11px', color: COLORS.textMuted, marginTop: '4px', lineHeight: '1.4' }}>
-          {help && <div>{help}</div>}
-          {examples && <div style={{ fontStyle: 'italic', marginTop: '2px' }}>{examples}</div>}
-        </div>
-      )}
-    </div>
-  );
+function fmtKc(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  var abs = Math.abs(n);
+  if (abs >= 1000000) return (n / 1000000).toFixed(2).replace(".", ",") + " mil. Kč";
+  if (abs >= 10000) return Math.round(n / 1000).toLocaleString("cs-CZ") + " tis. Kč";
+  return Math.round(n).toLocaleString("cs-CZ") + " Kč";
+}
+function fmtYears(n) {
+  if (n === null) return "> horizont";
+  return n.toFixed(1).replace(".", ",") + " let";
 }
 
-function NumberInput({ label, value, onChange, unit, help }) {
-  return (
-    <div style={{ marginBottom: '16px' }}>
-      <label style={{ fontSize: '12px', fontWeight: 600, color: COLORS.text, display: 'block', marginBottom: '4px' }}>
-        {label}
-      </label>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <input
-          type="number"
-          value={value}
-          onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
-          style={{
-            flex: 1,
-            padding: '6px 10px',
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: '4px',
-            fontSize: '13px',
-            fontFamily: 'inherit',
-            background: COLORS.card,
-          }}
-        />
-        {unit && <span style={{ fontSize: '12px', color: COLORS.textMuted }}>{unit}</span>}
-      </div>
-      {help && <div style={{ fontSize: '11px', color: COLORS.textMuted, marginTop: '2px' }}>{help}</div>}
-    </div>
-  );
+// === BUILD INPUTS (left column) ===
+
+function buildInputs() {
+  var c = document.getElementById("inputs");
+  c.innerHTML = "";
+  var r = compute();
+  var s = r.summary;
+
+  // 01 Velikost
+  var sec1 = section("01 · VELIKOST ÚLOŽIŠTĚ");
+  sec1.appendChild(presetsRow(SIZING, function(k){ return state.bessCapacityKWh === SIZING[k].bessCapacityKWh; }, applySizing));
+  sec1.appendChild(numberInput("Kapacita", "bessCapacityKWh", "kWh"));
+  sec1.appendChild(numberInput("Výkon", "bessPowerKW", "kW"));
+  sec1.appendChild(numberInput("Cena investice", "baseInvestment", "Kč", "na klíč včetně instalace"));
+  c.appendChild(sec1);
+
+  // 02 Typ provozu
+  var sec2 = section("02 · TYP PROVOZU", null, "#6FA86C");
+  sec2.appendChild(presetsRow(PRESETS, function(k){ return state.businessPreset === k; }, applyPreset));
+  sec2.appendChild(helpDiv("Předvolba nastaví typické hodnoty pro daný typ provozu. Lze následně upravit ručně.", true));
+  c.appendChild(sec2);
+
+  // 03 Peak Shaving
+  var sec3 = section("03 · PEAK SHAVING", fmtKc(s.peakShavingYear) + "/rok", "#1F4A2E");
+  sec3.appendChild(slider("Rezervovaný výkon", "reservedPowerKW", 100, 2000, 10, "kW", "Sjednaný s distributorem"));
+  sec3.appendChild(slider("Průměrné překročení", "peakOverrunKW", 0, 500, 5, "kW", "Čtvrthodinové maximum nad rezervovaným"));
+  sec3.appendChild(slider("Měsíců s překročením / rok", "overrunMonths", 0, 12, 1, "měs."));
+  sec3.appendChild(slider("Penále za překročení", "penaltyRate", 100, 1700, 10, "Kč/kW/měs.", "NN = 1 683 (ČEZD 2026), VN 200–400"));
+  sec3.appendChild(divider());
+  sec3.appendChild(slider("Snížení rez. výkonu díky BESS", "reservedReductionKW", 0, 500, 10, "kW"));
+  sec3.appendChild(slider("Cena rezervovaného výkonu", "reservedPriceRate", 50, 400, 5, "Kč/kW/měs."));
+  c.appendChild(sec3);
+
+  // 04 Arbitráž
+  var sec4 = section("04 · ARBITRÁŽ", fmtKc(s.arbitrageYear) + "/rok", "#3A8246");
+  sec4.appendChild(slider("% kapacity pro arbitráž", "arbitrageCapacityPct", 0, 100, 5, "%"));
+  sec4.appendChild(slider("Nákupní cena (noc/přebytek)", "buyPrice", 0.5, 5, 0.1, "Kč/kWh", "Spot v noci 1,2–2,0"));
+  sec4.appendChild(slider("Cena ve špičce", "sellPrice", 1, 10, 0.1, "Kč/kWh", "Uspořená ve špičkách 2,8–4,5"));
+  sec4.appendChild(slider("Cyklů ročně", "arbitrageCyclesPerYear", 0, 365, 5, "cyklů", "6 000+ životních / 320 ročně = 18 let"));
+  c.appendChild(sec4);
+
+  // 05 EV
+  var sec5 = section("05 · EV NABÍJENÍ", fmtKc(s.evYearBase) + "/rok", "#6FA86C");
+  sec5.appendChild(slider("% kapacity pro EV", "evCapacityPct", 0, 70, 5, "%", "0–30 osobní · 30–70 logistika"));
+  sec5.appendChild(slider("Prodejní cena za kWh", "evPrice", 5, 20, 0.5, "Kč/kWh", "Osobní 8–15 · kamiony až 17", true));
+  sec5.appendChild(slider("Náklad na energii", "evEnergyCostKWh", 0.5, 5, 0.1, "Kč/kWh"));
+  sec5.appendChild(slider("Využití nyní", "evUtilizationStart", 5, 100, 5, "%"));
+  sec5.appendChild(slider("Růst využití ročně", "evGrowthPerYear", 0, 50, 1, "%", "ČR: počet EV +30 % YoY", true));
+  c.appendChild(sec5);
+
+  // 06 FVE
+  var sec6 = section("06 · FVE PŘETOKY", fmtKc(s.fveYear) + "/rok", "#D4A93C");
+  sec6.appendChild(slider("Instalovaný výkon FVE", "fveInstalledKWp", 0, 2000, 10, "kWp"));
+  sec6.appendChild(slider("Denní přetok", "fveSurplusDaily", 0, 5000, 50, "kWh/den", "Energie nyní prodávaná za 0,5 Kč/kWh"));
+  sec6.appendChild(slider("Cena výkupu", "fveBuybackPrice", 0, 2, 0.1, "Kč/kWh"));
+  sec6.appendChild(slider("Cena vlastní spotřeby", "fveSelfUsePrice", 1, 10, 0.1, "Kč/kWh"));
+  c.appendChild(sec6);
+
+  // 07 Vítr
+  var sec7 = section("07 · VĚTRNÁ ELEKTRÁRNA", fmtKc(s.windYear) + "/rok", "#8B7355");
+  sec7.appendChild(slider("Instalovaný výkon vítr", "windInstalledKW", 0, 3000, 50, "kW"));
+  sec7.appendChild(slider("Denní přetok", "windSurplusDaily", 0, 10000, 100, "kWh/den"));
+  sec7.appendChild(slider("Cena výkupu", "windBuybackPrice", 0, 2, 0.1, "Kč/kWh"));
+  sec7.appendChild(slider("Cena vlastní spotřeby", "windSelfUsePrice", 1, 10, 0.1, "Kč/kWh"));
+  c.appendChild(sec7);
+
+  // 08 Financování
+  var sec8 = section("08 · FINANCOVÁNÍ", null, "#163821");
+  sec8.appendChild(slider("Vlastní prostředky", "ownEquityPct", 0, 100, 5, "%", "= " + fmtKc(state.baseInvestment * state.ownEquityPct / 100)));
+  sec8.appendChild(slider("ESSOX leasing", "essoxPct", 0, 100, 5, "%", state.essoxRate + "% p.a. · " + state.essoxYears + " let · " + fmtKc(s.essoxMonthly) + "/měs."));
+  sec8.appendChild(slider("Sazba ESSOX", "essoxRate", 3, 10, 0.1, "%"));
+  sec8.appendChild(slider("Doba ESSOX", "essoxYears", 1, 10, 1, "let"));
+  sec8.appendChild(divider());
+  sec8.appendChild(slider("Bankovní úvěr", "bankPct", 0, 100, 5, "%", state.bankRate + "% p.a. · " + state.bankYears + " let · " + fmtKc(s.bankMonthly) + "/měs."));
+  sec8.appendChild(slider("Sazba úvěru", "bankRate", 4, 12, 0.1, "%"));
+  sec8.appendChild(slider("Doba úvěru", "bankYears", 1, 10, 1, "let"));
+  var sumPct = state.ownEquityPct + state.essoxPct + state.bankPct;
+  if (sumPct !== 100) {
+    var w = document.createElement("div");
+    w.className = "warning-box";
+    w.textContent = "⚠ Součet = " + sumPct + " %. Doporučeno 100 %.";
+    sec8.appendChild(w);
+  }
+  c.appendChild(sec8);
+
+  // 09 Provoz
+  var sec9 = section("09 · PROVOZ A PROJEKCE", null, "#5C5C5C");
+  sec9.appendChild(slider("Provozní náklady (OPEX)", "opexPerYear", 0, 500000, 10000, "Kč/rok"));
+  sec9.appendChild(slider("Degradace baterie ročně", "degradationPerYear", 0, 5, 0.1, "%", "LFP: 1–2 %"));
+  sec9.appendChild(slider("Inflace cen energií", "electricityInflation", 0, 10, 0.5, "%"));
+  sec9.appendChild(slider("Horizont analýzy", "analysisHorizon", 5, 20, 1, "let"));
+  c.appendChild(sec9);
 }
 
-function PresetButton({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        padding: '6px 12px',
-        fontSize: '11px',
-        fontWeight: 600,
-        background: active ? COLORS.primary : 'transparent',
-        color: active ? '#fff' : COLORS.primary,
-        border: `1.5px solid ${COLORS.primary}`,
-        borderRadius: '16px',
-        cursor: 'pointer',
-        marginRight: '6px',
-        marginBottom: '6px',
-        transition: 'all 0.15s',
-      }}
-    >
-      {label}
-    </button>
-  );
+function section(title, badge, color) {
+  var s = document.createElement("div");
+  s.className = "section";
+  if (color) s.style.borderLeftColor = color;
+  var h = document.createElement("div");
+  h.className = "section-head";
+  var t = document.createElement("span");
+  t.className = "section-title";
+  t.textContent = title;
+  h.appendChild(t);
+  if (badge) {
+    var b = document.createElement("span");
+    b.className = "badge";
+    b.textContent = badge;
+    h.appendChild(b);
+  }
+  s.appendChild(h);
+  return s;
 }
 
-function Section({ title, badge, children, color }) {
-  return (
-    <div style={{
-      background: COLORS.card,
-      borderRadius: '12px',
-      padding: '20px',
-      marginBottom: '16px',
-      border: `1px solid ${COLORS.border}`,
-      borderLeft: `4px solid ${color || COLORS.primary}`,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-        <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: COLORS.primary, letterSpacing: '0.02em' }}>
-          {title}
-        </h3>
-        {badge && (
-          <span style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            background: COLORS.accentLight,
-            color: COLORS.primary,
-            padding: '3px 10px',
-            borderRadius: '4px',
-          }}>
-            {badge}
-          </span>
-        )}
-      </div>
-      {children}
-    </div>
-  );
+function slider(label, key, min, max, step, unit, help, isExample) {
+  var w = document.createElement("div");
+  w.className = "slider-block";
+
+  var head = document.createElement("div");
+  head.className = "slider-head";
+  var lbl = document.createElement("label");
+  lbl.className = "slider-label";
+  lbl.textContent = label;
+  var val = document.createElement("span");
+  val.className = "slider-value";
+  val.textContent = state[key].toLocaleString("cs-CZ") + " " + unit;
+  head.appendChild(lbl);
+  head.appendChild(val);
+  w.appendChild(head);
+
+  var input = document.createElement("input");
+  input.type = "range";
+  input.min = min; input.max = max; input.step = step;
+  input.value = state[key];
+  input.addEventListener("input", function() {
+    state[key] = parseFloat(input.value);
+    val.textContent = state[key].toLocaleString("cs-CZ") + " " + unit;
+    renderAll();
+  });
+  w.appendChild(input);
+
+  if (help) {
+    var h = document.createElement("div");
+    h.className = "help";
+    if (isExample) {
+      var em = document.createElement("em");
+      em.textContent = help;
+      h.appendChild(em);
+    } else {
+      h.textContent = help;
+    }
+    w.appendChild(h);
+  }
+  return w;
 }
 
-function KpiCard({ label, value, sublabel, accent, big }) {
-  return (
-    <div style={{
-      background: accent ? COLORS.primary : COLORS.card,
-      color: accent ? '#fff' : COLORS.text,
-      borderRadius: '10px',
-      padding: big ? '20px' : '14px',
-      border: accent ? 'none' : `1px solid ${COLORS.border}`,
-      flex: 1,
-      minWidth: 0,
-    }}>
-      <div style={{
-        fontSize: '10px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.08em',
-        fontWeight: 600,
-        opacity: 0.7,
-        marginBottom: '6px',
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: big ? '26px' : '20px',
-        fontWeight: 800,
-        lineHeight: '1.1',
-        fontVariantNumeric: 'tabular-nums',
-      }}>
-        {value}
-      </div>
-      {sublabel && (
-        <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
-          {sublabel}
-        </div>
-      )}
-    </div>
-  );
+function numberInput(label, key, unit, help) {
+  var w = document.createElement("div");
+  w.className = "slider-block";
+  var lbl = document.createElement("label");
+  lbl.className = "slider-label";
+  lbl.style.display = "block";
+  lbl.style.marginBottom = "4px";
+  lbl.textContent = label;
+  w.appendChild(lbl);
+  var row = document.createElement("div");
+  row.className = "num-row";
+  var input = document.createElement("input");
+  input.type = "number";
+  input.value = state[key];
+  input.addEventListener("input", function() {
+    state[key] = parseFloat(input.value) || 0;
+    renderAll();
+  });
+  row.appendChild(input);
+  if (unit) {
+    var u = document.createElement("span");
+    u.className = "unit";
+    u.textContent = unit;
+    row.appendChild(u);
+  }
+  w.appendChild(row);
+  if (help) {
+    var hd = document.createElement("div");
+    hd.className = "help";
+    hd.textContent = help;
+    w.appendChild(hd);
+  }
+  return w;
 }
 
-// ============================================================================
-// HLAVNÍ KOMPONENT
-// ============================================================================
-
-function BessCalculator() {
-  const [inputs, setInputs] = useState(DEFAULTS);
-  const [businessPreset, setBusinessPreset] = useState('truhlarna');
-
-  const setVal = (key) => (v) => setInputs(prev => ({ ...prev, [key]: v }));
-
-  // Předvolby typu podniku
-  const presets = {
-    truhlarna: {
-      label: 'Truhlárna / dřevozpracující',
-      reservedPowerKW: 250, peakOverrunKW: 80, overrunMonths: 6, penaltyRate: 350,
-      reservedReductionKW: 50, evCapacityPct: 10, arbitrageCapacityPct: 70,
-    },
-    strojirna: {
-      label: 'Strojírenský podnik',
-      reservedPowerKW: 800, peakOverrunKW: 250, overrunMonths: 8, penaltyRate: 350,
-      reservedReductionKW: 200, evCapacityPct: 15, arbitrageCapacityPct: 60,
-    },
-    potravinarstvi: {
-      label: 'Potravinářství / chlazení',
-      reservedPowerKW: 500, peakOverrunKW: 150, overrunMonths: 10, penaltyRate: 350,
-      reservedReductionKW: 100, evCapacityPct: 10, arbitrageCapacityPct: 65,
-    },
-    logistika: {
-      label: 'Logistické centrum + kamiony',
-      reservedPowerKW: 400, peakOverrunKW: 100, overrunMonths: 4, penaltyRate: 350,
-      reservedReductionKW: 80, evCapacityPct: 50, evPrice: 17, arbitrageCapacityPct: 30,
-    },
-    plast: {
-      label: 'Plastikářský / vstřikování',
-      reservedPowerKW: 700, peakOverrunKW: 200, overrunMonths: 9, penaltyRate: 350,
-      reservedReductionKW: 150, evCapacityPct: 10, arbitrageCapacityPct: 65,
-    },
-  };
-
-  const applyPreset = (key) => {
-    setBusinessPreset(key);
-    setInputs(prev => ({ ...prev, ...presets[key] }));
-  };
-
-  // Velikost BESS – předvolby
-  const sizingPresets = {
-    small: { label: 'Malý 500 kWh', bessCapacityKWh: 500, bessPowerKW: 250, baseInvestment: 4600000 },
-    medium: { label: 'Střední 1 200 kWh', bessCapacityKWh: 1200, bessPowerKW: 600, baseInvestment: 9500000 },
-    standard: { label: 'TAMDA 2 411 kWh', bessCapacityKWh: 2411, bessPowerKW: 1250, baseInvestment: 17550000 },
-    large: { label: 'Velký 4 000 kWh', bessCapacityKWh: 4000, bessPowerKW: 2000, baseInvestment: 28500000 },
-  };
-
-  const applySizing = (key) => {
-    setInputs(prev => ({ ...prev, ...sizingPresets[key] }));
-  };
-
-  const results = useMemo(() => calculateProjections(inputs), [inputs]);
-  const { yearly, summary } = results;
-
-  // Data pro stacked chart skladby výnosů
-  const yearOneBreakdown = [
-    { name: 'Peak shaving', value: summary.peakShavingYear, color: '#1F4A2E' },
-    { name: 'Arbitráž', value: summary.arbitrageYear, color: '#3A8246' },
-    { name: 'EV nabíjení', value: summary.evYearBase, color: '#6FA86C' },
-    { name: 'FVE přetoky', value: summary.fveYear, color: '#D4A93C' },
-    { name: 'Vítr přetoky', value: summary.windYear, color: '#8B7355' },
-  ].filter(d => d.value > 0);
-
-  return (
-    <div style={{
-      fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-      background: COLORS.bg,
-      minHeight: '100vh',
-      padding: '20px',
-      color: COLORS.text,
-    }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-
-        {/* HEADER */}
-        <div style={{
-          background: COLORS.primary,
-          color: '#fff',
-          padding: '32px 36px',
-          borderRadius: '12px',
-          marginBottom: '20px',
-          backgroundImage: `linear-gradient(135deg, ${COLORS.primaryDark} 0%, ${COLORS.primary} 100%)`,
-        }}>
-          <div style={{ fontSize: '11px', letterSpacing: '0.15em', opacity: 0.7, marginBottom: '8px', textTransform: 'uppercase' }}>
-            Kalkulačka návratnosti
-          </div>
-          <h1 style={{ margin: 0, fontSize: '32px', fontWeight: 800, lineHeight: '1.1' }}>
-            Bateriové úložiště BESS
-          </h1>
-          <div style={{ fontSize: '14px', opacity: 0.85, marginTop: '8px', maxWidth: '700px', lineHeight: '1.5' }}>
-            Spočítejte si přesný měsíční cashflow a návratnost investice do BESS. Čtyři zdroje příjmů,
-            financování ESSOX + úvěr, projekce na 15 let. Všechny vstupy lze měnit.
-          </div>
-        </div>
-
-        {/* HERO KPI */}
-        <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <KpiCard
-            big
-            accent
-            label="Měsíční CASHFLOW (1. rok)"
-            value={fmtKc(summary.yearOneNetMonthly)}
-            sublabel={`po splátkách a opex · ${summary.yearOneNetMonthly > 0 ? 'výdělek' : 'doplácení'}`}
-          />
-          <KpiCard
-            big
-            label="Návratnost vlastních zdrojů"
-            value={fmtYears(summary.paybackYear)}
-            sublabel={summary.ownAmount > 0 ? `${fmtKc(summary.ownAmount)} vlastních` : 'plně financováno'}
-          />
-          <KpiCard
-            big
-            label={`Zisk za ${inputs.analysisHorizon} let`}
-            value={fmtKc(summary.totalProfit)}
-            sublabel={`po odečtení všech nákladů`}
-          />
-          <KpiCard
-            big
-            label="Měsíční splátka"
-            value={fmtKc(summary.totalMonthlyPayment)}
-            sublabel={`ESSOX ${fmtKc(summary.essoxMonthly)} + úvěr ${fmtKc(summary.bankMonthly)}`}
-          />
-        </div>
-
-        {/* HLAVNÍ LAYOUT: vstupy vlevo, výsledky vpravo */}
-        <div style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: '20px', alignItems: 'start' }}>
-
-          {/* LEVÝ SLOUPEC: VSTUPY */}
-          <div>
-
-            {/* Velikost BESS */}
-            <Section title="01 · VELIKOST ÚLOŽIŠTĚ" color={COLORS.primary}>
-              <div style={{ marginBottom: '14px' }}>
-                {Object.entries(sizingPresets).map(([k, p]) => (
-                  <PresetButton
-                    key={k}
-                    label={p.label}
-                    active={inputs.bessCapacityKWh === p.bessCapacityKWh}
-                    onClick={() => applySizing(k)}
-                  />
-                ))}
-              </div>
-              <NumberInput label="Kapacita" value={inputs.bessCapacityKWh} onChange={setVal('bessCapacityKWh')} unit="kWh" />
-              <NumberInput label="Výkon" value={inputs.bessPowerKW} onChange={setVal('bessPowerKW')} unit="kW" />
-              <NumberInput label="Cena investice celkem" value={inputs.baseInvestment} onChange={setVal('baseInvestment')} unit="Kč" help="Včetně instalace, trafostanice, kabeláže" />
-            </Section>
-
-            {/* Typ podniku */}
-            <Section title="02 · TYP PROVOZU" color={COLORS.accent}>
-              <div>
-                {Object.entries(presets).map(([k, p]) => (
-                  <PresetButton
-                    key={k}
-                    label={p.label}
-                    active={businessPreset === k}
-                    onClick={() => applyPreset(k)}
-                  />
-                ))}
-              </div>
-              <div style={{ fontSize: '11px', color: COLORS.textMuted, marginTop: '8px', fontStyle: 'italic' }}>
-                Předvolba nastaví typické hodnoty pro daný typ provozu. Lze následně upravit.
-              </div>
-            </Section>
-
-            {/* PEAK SHAVING */}
-            <Section title="03 · PEAK SHAVING" badge={fmtKc(summary.peakShavingYear) + '/rok'} color="#1F4A2E">
-              <Slider
-                label="Rezervovaný výkon"
-                value={inputs.reservedPowerKW} onChange={setVal('reservedPowerKW')}
-                min={100} max={2000} step={10} unit="kW"
-                help="Sjednaný rezervovaný výkon s distributorem"
-              />
-              <Slider
-                label="Průměrné překročení"
-                value={inputs.peakOverrunKW} onChange={setVal('peakOverrunKW')}
-                min={0} max={500} step={5} unit="kW"
-                help="Měsíční čtvrthodinové maximum nad rezervovaným výkonem"
-              />
-              <Slider
-                label="Měsíců s překročením / rok"
-                value={inputs.overrunMonths} onChange={setVal('overrunMonths')}
-                min={0} max={12} step={1} unit="měs."
-              />
-              <Slider
-                label="Penále za překročení"
-                value={inputs.penaltyRate} onChange={setVal('penaltyRate')}
-                min={100} max={1700} step={10} unit="Kč/kW/měs."
-                help="NN = 1 683 Kč/kW/měs. (ČEZD ceník 2026), VN typicky 200–400 Kč/kW/měs."
-              />
-              <div style={{ height: '1px', background: COLORS.border, margin: '14px 0' }} />
-              <Slider
-                label="Snížení rezervovaného výkonu díky BESS"
-                value={inputs.reservedReductionKW} onChange={setVal('reservedReductionKW')}
-                min={0} max={500} step={10} unit="kW"
-                help="O kolik kW lze snížit rezervaci, když BESS pokryje špičky"
-              />
-              <Slider
-                label="Cena rezervovaného výkonu"
-                value={inputs.reservedPriceRate} onChange={setVal('reservedPriceRate')}
-                min={50} max={400} step={5} unit="Kč/kW/měs."
-                help="Měsíční platba za sjednaný rezervovaný výkon (VN)"
-              />
-            </Section>
-
-            {/* ARBITRÁŽ */}
-            <Section title="04 · ENERGETICKÁ ARBITRÁŽ" badge={fmtKc(summary.arbitrageYear) + '/rok'} color="#3A8246">
-              <Slider
-                label="% kapacity BESS pro arbitráž"
-                value={inputs.arbitrageCapacityPct} onChange={setVal('arbitrageCapacityPct')}
-                min={0} max={100} step={5} unit="%"
-              />
-              <Slider
-                label="Nákupní cena (noc, přebytky)"
-                value={inputs.buyPrice} onChange={setVal('buyPrice')}
-                min={0.5} max={5} step={0.1} unit="Kč/kWh"
-                help="Spotová cena v noci typicky 1,2–2,0 Kč/kWh"
-              />
-              <Slider
-                label="Cena ve špičce / vlastní spotřeba"
-                value={inputs.sellPrice} onChange={setVal('sellPrice')}
-                min={1} max={10} step={0.1} unit="Kč/kWh"
-                help="Cena uspořené energie ve špičkách (typicky 2,8–4,5 Kč/kWh)"
-              />
-              <Slider
-                label="Cyklů ročně pro arbitráž"
-                value={inputs.arbitrageCyclesPerYear} onChange={setVal('arbitrageCyclesPerYear')}
-                min={0} max={365} step={5} unit="cyklů"
-                help="Životnost BESS 6 000+ cyklů → 350/rok = 17 let"
-              />
-              <div style={{
-                background: COLORS.accentLight,
-                padding: '10px 12px',
-                borderRadius: '6px',
-                fontSize: '11px',
-                color: COLORS.primaryDark,
-                marginTop: '6px',
-              }}>
-                <strong>Marže:</strong> {(inputs.sellPrice - inputs.buyPrice).toFixed(2)} Kč/kWh ·
-                <strong> Roční obrat:</strong> {Math.round(inputs.bessCapacityKWh * inputs.arbitrageCapacityPct/100 * 0.93 * inputs.arbitrageCyclesPerYear / 1000).toLocaleString('cs-CZ')} MWh
-              </div>
-            </Section>
-
-            {/* EV NABÍJENÍ */}
-            <Section title="05 · EV NABÍJENÍ" badge={fmtKc(summary.evYearBase) + '/rok'} color="#6FA86C">
-              <Slider
-                label="% kapacity BESS pro nabíjení EV"
-                value={inputs.evCapacityPct} onChange={setVal('evCapacityPct')}
-                min={0} max={70} step={5} unit="%"
-                help="0–30% osobní auta, 30–70% logistika a kamiony"
-              />
-              <Slider
-                label="Prodejní cena za kWh"
-                value={inputs.evPrice} onChange={setVal('evPrice')}
-                min={5} max={20} step={0.5} unit="Kč/kWh"
-                examples="Osobní 8–15 Kč · kamiony / nabíjení 600 kW až 17 Kč"
-              />
-              <Slider
-                label="Náklad na energii pro nabíjení"
-                value={inputs.evEnergyCostKWh} onChange={setVal('evEnergyCostKWh')}
-                min={0.5} max={5} step={0.1} unit="Kč/kWh"
-                help="Z BESS = nákupní cena + degradace"
-              />
-              <Slider
-                label="Využití nabíječky nyní"
-                value={inputs.evUtilizationStart} onChange={setVal('evUtilizationStart')}
-                min={5} max={100} step={5} unit="%"
-                help="% dnů v roce kdy se kapacita plně využije"
-              />
-              <Slider
-                label="Růst využití ročně"
-                value={inputs.evGrowthPerYear} onChange={setVal('evGrowthPerYear')}
-                min={0} max={50} step={1} unit="%"
-                examples="ČR: počet EV +30% YoY (2024→2025: 36→60 tis.)"
-              />
-            </Section>
-
-            {/* FVE */}
-            <Section title="06 · FVE PŘETOKY" badge={fmtKc(summary.fveYear) + '/rok'} color="#D4A93C">
-              <Slider
-                label="Instalovaný výkon FVE"
-                value={inputs.fveInstalledKWp} onChange={setVal('fveInstalledKWp')}
-                min={0} max={2000} step={10} unit="kWp"
-              />
-              <Slider
-                label="Průměrný denní přetok"
-                value={inputs.fveSurplusDaily} onChange={setVal('fveSurplusDaily')}
-                min={0} max={5000} step={50} unit="kWh/den"
-                help="Energie kterou nyní prodáváte za 0,5 Kč/kWh"
-              />
-              <Slider
-                label="Cena výkupu (nyní)"
-                value={inputs.fveBuybackPrice} onChange={setVal('fveBuybackPrice')}
-                min={0} max={2} step={0.1} unit="Kč/kWh"
-              />
-              <Slider
-                label="Cena při vlastním využití"
-                value={inputs.fveSelfUsePrice} onChange={setVal('fveSelfUsePrice')}
-                min={1} max={10} step={0.1} unit="Kč/kWh"
-                help="Cena, kterou bych jinak platil dodavateli"
-              />
-            </Section>
-
-            {/* VÍTR */}
-            <Section title="07 · VĚTRNÁ ELEKTRÁRNA" badge={fmtKc(summary.windYear) + '/rok'} color="#8B7355">
-              <Slider
-                label="Instalovaný výkon vítr"
-                value={inputs.windInstalledKW} onChange={setVal('windInstalledKW')}
-                min={0} max={3000} step={50} unit="kW"
-              />
-              <Slider
-                label="Průměrný denní přetok"
-                value={inputs.windSurplusDaily} onChange={setVal('windSurplusDaily')}
-                min={0} max={10000} step={100} unit="kWh/den"
-              />
-              <Slider
-                label="Cena výkupu (nyní)"
-                value={inputs.windBuybackPrice} onChange={setVal('windBuybackPrice')}
-                min={0} max={2} step={0.1} unit="Kč/kWh"
-              />
-              <Slider
-                label="Cena při vlastním využití"
-                value={inputs.windSelfUsePrice} onChange={setVal('windSelfUsePrice')}
-                min={1} max={10} step={0.1} unit="Kč/kWh"
-              />
-            </Section>
-
-            {/* FINANCOVÁNÍ */}
-            <Section title="08 · FINANCOVÁNÍ" color={COLORS.primaryDark}>
-              <Slider
-                label="Vlastní prostředky"
-                value={inputs.ownEquityPct} onChange={setVal('ownEquityPct')}
-                min={0} max={100} step={5} unit="%"
-                help={`= ${fmtKc(inputs.baseInvestment * inputs.ownEquityPct / 100)}`}
-              />
-              <Slider
-                label="ESSOX leasing"
-                value={inputs.essoxPct} onChange={setVal('essoxPct')}
-                min={0} max={100} step={5} unit="%"
-                help={`${inputs.essoxRate}% p.a. · ${inputs.essoxYears} let · ${fmtKc(summary.essoxMonthly)}/měs.`}
-              />
-              <Slider
-                label="Úroková sazba ESSOX"
-                value={inputs.essoxRate} onChange={setVal('essoxRate')}
-                min={3} max={10} step={0.1} unit="%"
-              />
-              <Slider
-                label="Doba ESSOX"
-                value={inputs.essoxYears} onChange={setVal('essoxYears')}
-                min={1} max={10} step={1} unit="let"
-              />
-              <div style={{ height: '1px', background: COLORS.border, margin: '14px 0' }} />
-              <Slider
-                label="Bankovní úvěr"
-                value={inputs.bankPct} onChange={setVal('bankPct')}
-                min={0} max={100} step={5} unit="%"
-                help={`${inputs.bankRate}% p.a. · ${inputs.bankYears} let · ${fmtKc(summary.bankMonthly)}/měs.`}
-              />
-              <Slider
-                label="Úroková sazba úvěr"
-                value={inputs.bankRate} onChange={setVal('bankRate')}
-                min={4} max={12} step={0.1} unit="%"
-              />
-              <Slider
-                label="Doba úvěr"
-                value={inputs.bankYears} onChange={setVal('bankYears')}
-                min={1} max={10} step={1} unit="let"
-              />
-              {(inputs.ownEquityPct + inputs.essoxPct + inputs.bankPct) !== 100 && (
-                <div style={{
-                  background: '#FFF4E5',
-                  border: '1px solid ' + COLORS.amber,
-                  padding: '8px 10px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                  color: '#8B6B1F',
-                  marginTop: '8px',
-                }}>
-                  ⚠ Součet = {inputs.ownEquityPct + inputs.essoxPct + inputs.bankPct} %. Doporučeno 100 %.
-                </div>
-              )}
-            </Section>
-
-            {/* PROVOZ */}
-            <Section title="09 · PROVOZ A PROJEKCE" color={COLORS.textMuted}>
-              <Slider
-                label="Provozní náklady (servis, monitoring)"
-                value={inputs.opexPerYear} onChange={setVal('opexPerYear')}
-                min={0} max={500000} step={10000} unit="Kč/rok"
-              />
-              <Slider
-                label="Degradace baterie ročně"
-                value={inputs.degradationPerYear} onChange={setVal('degradationPerYear')}
-                min={0} max={5} step={0.1} unit="%"
-                help="LFP technologie: typicky 1–2 % ročně"
-              />
-              <Slider
-                label="Inflace cen energií ročně"
-                value={inputs.electricityInflation} onChange={setVal('electricityInflation')}
-                min={0} max={10} step={0.5} unit="%"
-              />
-              <Slider
-                label="Horizont analýzy"
-                value={inputs.analysisHorizon} onChange={setVal('analysisHorizon')}
-                min={5} max={20} step={1} unit="let"
-              />
-            </Section>
-          </div>
-
-          {/* PRAVÝ SLOUPEC: VÝSLEDKY */}
-          <div>
-
-            {/* Skladba výnosů 1. roku */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '16px',
-              border: `1px solid ${COLORS.border}`,
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>
-                  Skladba výnosů — 1. rok
-                </h3>
-                <div style={{ fontSize: '20px', fontWeight: 800, color: COLORS.primary }}>
-                  {fmtKc(summary.yearOneRevenue)} celkem
-                </div>
-              </div>
-
-              {yearOneBreakdown.map(d => {
-                const pct = (d.value / summary.yearOneRevenue) * 100;
-                return (
-                  <div key={d.name} style={{ marginBottom: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '4px' }}>
-                      <span style={{ fontWeight: 600 }}>
-                        <span style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '2px', background: d.color, marginRight: '8px' }} />
-                        {d.name}
-                      </span>
-                      <span style={{ fontVariantNumeric: 'tabular-nums', fontWeight: 700 }}>
-                        {fmtKc(d.value)} <span style={{ color: COLORS.textMuted, fontWeight: 400, marginLeft: '6px' }}>({pct.toFixed(0)} %)</span>
-                      </span>
-                    </div>
-                    <div style={{ height: '6px', background: COLORS.bg, borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: `${pct}%`, height: '100%', background: d.color }} />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* GRAF KUMULATIVNÍ CASHFLOW */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '16px',
-              border: `1px solid ${COLORS.border}`,
-            }}>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>
-                Kumulativní cashflow — kdy se investice vrátí
-              </h3>
-              <div style={{ fontSize: '12px', color: COLORS.textMuted, marginBottom: '16px' }}>
-                Přechod do plusu = bod návratnosti vlastních prostředků
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <ComposedChart data={yearly}>
-                  <CartesianGrid stroke={COLORS.border} strokeDasharray="3 3" />
-                  <XAxis dataKey="year" label={{ value: 'Rok provozu', position: 'insideBottom', offset: -4, style: { fontSize: 11, fill: COLORS.textMuted } }} tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    formatter={(v) => fmtKcFull(v)}
-                    labelFormatter={(l) => `Rok ${l}`}
-                    contentStyle={{ background: '#fff', border: `1px solid ${COLORS.border}`, borderRadius: '6px', fontSize: '12px' }}
-                  />
-                  <ReferenceLine y={0} stroke={COLORS.text} strokeWidth={2} />
-                  <Area
-                    type="monotone"
-                    dataKey="cumulativeCashflow"
-                    name="Kumulativní cashflow"
-                    stroke={COLORS.primary}
-                    strokeWidth={3}
-                    fill={COLORS.primary}
-                    fillOpacity={0.15}
-                  />
-                </ComposedChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* GRAF: ROČNÍ VÝNOSY VS NÁKLADY */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '16px',
-              border: `1px solid ${COLORS.border}`,
-            }}>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>
-                Roční výnosy podle zdroje
-              </h3>
-              <div style={{ fontSize: '12px', color: COLORS.textMuted, marginBottom: '16px' }}>
-                Vidíte, jak roste podíl EV nabíjení s rostoucí adopcí elektromobility
-              </div>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={yearly}>
-                  <CartesianGrid stroke={COLORS.border} strokeDasharray="3 3" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `${(v / 1000000).toFixed(1)}M`} tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    formatter={(v) => fmtKcFull(v)}
-                    labelFormatter={(l) => `Rok ${l}`}
-                    contentStyle={{ background: '#fff', border: `1px solid ${COLORS.border}`, borderRadius: '6px', fontSize: '12px' }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="peakShaving" stackId="a" fill="#1F4A2E" name="Peak shaving" />
-                  <Bar dataKey="arbitrage" stackId="a" fill="#3A8246" name="Arbitráž" />
-                  <Bar dataKey="ev" stackId="a" fill="#6FA86C" name="EV nabíjení" />
-                  <Bar dataKey="fve" stackId="a" fill="#D4A93C" name="FVE" />
-                  <Bar dataKey="wind" stackId="a" fill="#8B7355" name="Vítr" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* GRAF: MĚSÍČNÍ CASHFLOW */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '16px',
-              border: `1px solid ${COLORS.border}`,
-            }}>
-              <h3 style={{ margin: '0 0 6px 0', fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>
-                Měsíční čistý cashflow
-              </h3>
-              <div style={{ fontSize: '12px', color: COLORS.textMuted, marginBottom: '16px' }}>
-                Kolik měsíčně vyděláte (po splátkách). Skok po splacení = ESSOX/úvěr doběhl.
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={yearly}>
-                  <CartesianGrid stroke={COLORS.border} strokeDasharray="3 3" />
-                  <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-                  <YAxis tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
-                  <Tooltip
-                    formatter={(v) => fmtKcFull(v) + '/měs.'}
-                    labelFormatter={(l) => `Rok ${l}`}
-                    contentStyle={{ background: '#fff', border: `1px solid ${COLORS.border}`, borderRadius: '6px', fontSize: '12px' }}
-                  />
-                  <ReferenceLine y={0} stroke={COLORS.text} />
-                  <Line
-                    type="monotone"
-                    dataKey="monthlyCashflow"
-                    name="Měsíční cashflow"
-                    stroke={COLORS.primary}
-                    strokeWidth={3}
-                    dot={{ fill: COLORS.primary, r: 4 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* TABULKA: ROČNÍ DETAIL */}
-            <div style={{
-              background: COLORS.card,
-              borderRadius: '12px',
-              padding: '24px',
-              marginBottom: '16px',
-              border: `1px solid ${COLORS.border}`,
-            }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: 700, color: COLORS.primary }}>
-                Detail po letech
-              </h3>
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', fontSize: '12px', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ background: COLORS.bg, color: COLORS.primary }}>
-                      <th style={{ padding: '8px 6px', textAlign: 'left', fontWeight: 700 }}>Rok</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>Výnosy</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>Splátky</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>OPEX</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>Čistý CF</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>CF/měs.</th>
-                      <th style={{ padding: '8px 6px', textAlign: 'right', fontWeight: 700 }}>Kumul.</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {yearly.map(y => (
-                      <tr key={y.year} style={{ borderBottom: `1px solid ${COLORS.border}` }}>
-                        <td style={{ padding: '6px', fontWeight: 600 }}>{y.year}</td>
-                        <td style={{ padding: '6px', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{fmtKc(y.revenue)}</td>
-                        <td style={{ padding: '6px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: COLORS.textMuted }}>
-                          {fmtKc(y.essoxPayment + y.bankPayment)}
-                        </td>
-                        <td style={{ padding: '6px', textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: COLORS.textMuted }}>
-                          {fmtKc(y.opex)}
-                        </td>
-                        <td style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontVariantNumeric: 'tabular-nums',
-                          fontWeight: 700,
-                          color: y.netCashflow > 0 ? COLORS.positive : COLORS.negative,
-                        }}>
-                          {fmtKc(y.netCashflow)}
-                        </td>
-                        <td style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontVariantNumeric: 'tabular-nums',
-                          fontWeight: 600,
-                          color: y.monthlyCashflow > 0 ? COLORS.positive : COLORS.negative,
-                        }}>
-                          {fmtKc(y.monthlyCashflow)}
-                        </td>
-                        <td style={{
-                          padding: '6px',
-                          textAlign: 'right',
-                          fontVariantNumeric: 'tabular-nums',
-                          fontWeight: 700,
-                          color: y.cumulativeCashflow >= 0 ? COLORS.primary : COLORS.negative,
-                        }}>
-                          {fmtKc(y.cumulativeCashflow)}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* SHRNUTÍ */}
-            <div style={{
-              background: COLORS.primary,
-              color: '#fff',
-              borderRadius: '12px',
-              padding: '28px',
-              backgroundImage: `linear-gradient(135deg, ${COLORS.primaryDark} 0%, ${COLORS.primary} 100%)`,
-            }}>
-              <div style={{ fontSize: '11px', letterSpacing: '0.15em', opacity: 0.7, marginBottom: '12px', textTransform: 'uppercase' }}>
-                Závěr investice
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                <div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>INVESTICE CELKEM</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800 }}>{fmtKc(summary.baseInvestment)}</div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
-                    Vlastní: {fmtKc(summary.ownAmount)} · ESSOX: {fmtKc(summary.essoxAmount)} · Úvěr: {fmtKc(summary.bankAmount)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>VÝNOSY ZA {inputs.analysisHorizon} LET</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800 }}>{fmtKc(summary.totalRevenue)}</div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginTop: '4px' }}>
-                    Celkové náklady (splátky + OPEX): {fmtKc(summary.totalCosts)}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>ČISTÝ ZISK ZA {inputs.analysisHorizon} LET</div>
-                  <div style={{ fontSize: '26px', fontWeight: 800, color: '#A8D9A0' }}>{fmtKc(summary.totalProfit)}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', opacity: 0.7, marginBottom: '4px' }}>NÁVRATNOST VLASTNÍCH</div>
-                  <div style={{ fontSize: '26px', fontWeight: 800, color: '#A8D9A0' }}>
-                    {fmtYears(summary.paybackYear)}
-                  </div>
-                </div>
-              </div>
-
-              <div style={{
-                marginTop: '24px',
-                paddingTop: '20px',
-                borderTop: '1px solid rgba(255,255,255,0.2)',
-                fontSize: '11px',
-                opacity: 0.7,
-                lineHeight: '1.5',
-              }}>
-                Kalkulace je orientační. Vychází z dat ERÚ, OTE a veřejných statistik (ČEZD ceník 2026: penále NN 1 683 Kč/kW/měs.,
-                průměrná spotová cena 2025 cca 2 000–2 300 Kč/MWh, počet EV v ČR +30 % YoY). Skutečné podmínky financování stanoví ESSOX s.r.o. a banka.
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* PATIČKA */}
-        <div style={{
-          textAlign: 'center',
-          padding: '24px',
-          marginTop: '20px',
-          fontSize: '11px',
-          color: COLORS.textMuted,
-        }}>
-          BESS kalkulačka návratnosti · free heating s.r.o. · ŠG PWA holding a.s. · Financování ESSOX · 2026
-        </div>
-
-      </div>
-    </div>
-  );
+function presetsRow(presetObj, isActive, onClick) {
+  var w = document.createElement("div");
+  w.className = "presets";
+  Object.keys(presetObj).forEach(function(k) {
+    var b = document.createElement("button");
+    b.className = "preset-btn" + (isActive(k) ? " active" : "");
+    b.textContent = presetObj[k].label;
+    b.addEventListener("click", function() { onClick(k); });
+    w.appendChild(b);
+  });
+  return w;
 }
 
+function helpDiv(text, italic) {
+  var d = document.createElement("div");
+  d.className = "help";
+  if (italic) d.style.fontStyle = "italic";
+  d.textContent = text;
+  return d;
+}
 
-ReactDOM.createRoot(document.getElementById('root')).render(<BessCalculator />);
+function divider() {
+  var d = document.createElement("div");
+  d.className = "divider";
+  return d;
+}
 
+function applySizing(key) {
+  var p = SIZING[key];
+  Object.keys(p).forEach(function(k) { if (k !== "label") state[k] = p[k]; });
+  renderAll();
+}
+
+function applyPreset(key) {
+  var p = PRESETS[key];
+  state.businessPreset = key;
+  Object.keys(p).forEach(function(k) { if (k !== "label") state[k] = p[k]; });
+  renderAll();
+}
+
+// === SVG CHARTS ===
+
+function svgEl(tag, attrs) {
+  var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  if (attrs) Object.keys(attrs).forEach(function(k) { e.setAttribute(k, attrs[k]); });
+  return e;
+}
+
+function makeSvg(W, H) {
+  return svgEl("svg", { viewBox: "0 0 " + W + " " + H, xmlns: "http://www.w3.org/2000/svg" });
+}
+
+function drawCumulative(yearly) {
+  var c = document.getElementById("chart-cumulative");
+  c.innerHTML = "";
+  var W = 700, H = 280, m = { t: 20, r: 20, b: 30, l: 60 };
+  var iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+  var xMin = 1, xMax = yearly.length;
+  var ys = yearly.map(function(d){ return d.cumulativeCashflow; });
+  var yMin = Math.min(0, Math.min.apply(null, ys));
+  var yMax = Math.max(0, Math.max.apply(null, ys));
+  var yR = yMax - yMin || 1;
+
+  function xp(x) { return m.l + ((x - xMin) / (xMax - xMin)) * iw; }
+  function yp(y) { return m.t + ih - ((y - yMin) / yR) * ih; }
+
+  var svg = makeSvg(W, H);
+
+  for (var i = 0; i <= 4; i++) {
+    var yv = yMin + (yR * i / 4);
+    var py = yp(yv);
+    svg.appendChild(svgEl("line", { x1: m.l, y1: py, x2: m.l + iw, y2: py, stroke: "#E5E0D0", "stroke-dasharray": "3 3" }));
+    var t = svgEl("text", { x: m.l - 8, y: py + 4, "text-anchor": "end", "font-size": 11, fill: "#5C5C5C" });
+    t.textContent = (yv / 1000000).toFixed(1) + "M";
+    svg.appendChild(t);
+  }
+
+  yearly.forEach(function(d) {
+    if (d.year === 1 || d.year % Math.max(1, Math.ceil(yearly.length / 8)) === 0) {
+      var t = svgEl("text", { x: xp(d.year), y: H - 8, "text-anchor": "middle", "font-size": 11, fill: "#5C5C5C" });
+      t.textContent = d.year;
+      svg.appendChild(t);
+    }
+  });
+
+  svg.appendChild(svgEl("line", { x1: m.l, y1: yp(0), x2: m.l + iw, y2: yp(0), stroke: "#1A1A1A", "stroke-width": 1.5 }));
+
+  var path = "M " + xp(1) + " " + yp(0);
+  yearly.forEach(function(d){ path += " L " + xp(d.year) + " " + yp(d.cumulativeCashflow); });
+  path += " L " + xp(yearly.length) + " " + yp(0) + " Z";
+  svg.appendChild(svgEl("path", { d: path, fill: "#1F4A2E", "fill-opacity": 0.15 }));
+
+  var line = "M " + xp(1) + " " + yp(yearly[0].cumulativeCashflow);
+  for (var k = 1; k < yearly.length; k++) line += " L " + xp(yearly[k].year) + " " + yp(yearly[k].cumulativeCashflow);
+  svg.appendChild(svgEl("path", { d: line, fill: "none", stroke: "#1F4A2E", "stroke-width": 3 }));
+
+  yearly.forEach(function(d){
+    svg.appendChild(svgEl("circle", { cx: xp(d.year), cy: yp(d.cumulativeCashflow), r: 3.5, fill: "#1F4A2E" }));
+  });
+
+  c.appendChild(svg);
+}
+
+function drawStackedBars(yearly) {
+  var c = document.getElementById("chart-revenue");
+  c.innerHTML = "";
+  var W = 700, H = 300, m = { t: 20, r: 20, b: 60, l: 60 };
+  var iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+  var keys = [
+    { k: "peakShaving", color: "#1F4A2E", label: "Peak shaving" },
+    { k: "arbitrage", color: "#3A8246", label: "Arbitráž" },
+    { k: "ev", color: "#6FA86C", label: "EV" },
+    { k: "fve", color: "#D4A93C", label: "FVE" },
+    { k: "wind", color: "#8B7355", label: "Vítr" }
+  ];
+
+  var maxR = 0;
+  yearly.forEach(function(d) {
+    var sum = 0;
+    keys.forEach(function(kk){ sum += d[kk.k]; });
+    if (sum > maxR) maxR = sum;
+  });
+  if (maxR === 0) maxR = 1;
+
+  var barGap = iw / yearly.length;
+  var barW = barGap * 0.7;
+
+  var svg = makeSvg(W, H);
+
+  for (var i = 0; i <= 4; i++) {
+    var yv = (maxR * i / 4);
+    var py = m.t + ih - (yv / maxR) * ih;
+    svg.appendChild(svgEl("line", { x1: m.l, y1: py, x2: m.l + iw, y2: py, stroke: "#E5E0D0", "stroke-dasharray": "3 3" }));
+    var t = svgEl("text", { x: m.l - 8, y: py + 4, "text-anchor": "end", "font-size": 11, fill: "#5C5C5C" });
+    t.textContent = (yv / 1000000).toFixed(1) + "M";
+    svg.appendChild(t);
+  }
+
+  yearly.forEach(function(d, idx) {
+    var acc = 0;
+    var cx = m.l + idx * barGap + barGap / 2;
+    keys.forEach(function(kk) {
+      var v = d[kk.k];
+      if (v <= 0) return;
+      var h = (v / maxR) * ih;
+      var py = m.t + ih - (acc + v) / maxR * ih;
+      svg.appendChild(svgEl("rect", { x: cx - barW / 2, y: py, width: barW, height: h, fill: kk.color }));
+      acc += v;
+    });
+    if (d.year === 1 || d.year % Math.max(1, Math.ceil(yearly.length / 8)) === 0) {
+      var tx = svgEl("text", { x: cx, y: m.t + ih + 16, "text-anchor": "middle", "font-size": 11, fill: "#5C5C5C" });
+      tx.textContent = d.year;
+      svg.appendChild(tx);
+    }
+  });
+
+  // Legend
+  var lx = m.l;
+  var ly = H - 12;
+  keys.forEach(function(kk) {
+    svg.appendChild(svgEl("rect", { x: lx, y: ly - 9, width: 10, height: 10, fill: kk.color }));
+    var t = svgEl("text", { x: lx + 14, y: ly, "font-size": 10, fill: "#1A1A1A" });
+    t.textContent = kk.label;
+    svg.appendChild(t);
+    lx += kk.label.length * 6.5 + 32;
+  });
+
+  c.appendChild(svg);
+}
+
+function drawMonthly(yearly) {
+  var c = document.getElementById("chart-monthly");
+  c.innerHTML = "";
+  var W = 700, H = 240, m = { t: 20, r: 20, b: 30, l: 60 };
+  var iw = W - m.l - m.r, ih = H - m.t - m.b;
+
+  var xMin = 1, xMax = yearly.length;
+  var ys = yearly.map(function(d){ return d.monthlyCashflow; });
+  var yMin = Math.min(0, Math.min.apply(null, ys));
+  var yMax = Math.max(0, Math.max.apply(null, ys));
+  var yR = yMax - yMin || 1;
+
+  function xp(x) { return m.l + ((x - xMin) / (xMax - xMin)) * iw; }
+  function yp(y) { return m.t + ih - ((y - yMin) / yR) * ih; }
+
+  var svg = makeSvg(W, H);
+
+  for (var i = 0; i <= 4; i++) {
+    var yv = yMin + (yR * i / 4);
+    var py = yp(yv);
+    svg.appendChild(svgEl("line", { x1: m.l, y1: py, x2: m.l + iw, y2: py, stroke: "#E5E0D0", "stroke-dasharray": "3 3" }));
+    var t = svgEl("text", { x: m.l - 8, y: py + 4, "text-anchor": "end", "font-size": 11, fill: "#5C5C5C" });
+    t.textContent = (yv / 1000).toFixed(0) + "k";
+    svg.appendChild(t);
+  }
+
+  yearly.forEach(function(d) {
+    if (d.year === 1 || d.year % Math.max(1, Math.ceil(yearly.length / 8)) === 0) {
+      var t = svgEl("text", { x: xp(d.year), y: H - 8, "text-anchor": "middle", "font-size": 11, fill: "#5C5C5C" });
+      t.textContent = d.year;
+      svg.appendChild(t);
+    }
+  });
+
+  svg.appendChild(svgEl("line", { x1: m.l, y1: yp(0), x2: m.l + iw, y2: yp(0), stroke: "#1A1A1A", "stroke-width": 1.5 }));
+
+  var line = "M " + xp(1) + " " + yp(yearly[0].monthlyCashflow);
+  for (var k = 1; k < yearly.length; k++) line += " L " + xp(yearly[k].year) + " " + yp(yearly[k].monthlyCashflow);
+  svg.appendChild(svgEl("path", { d: line, fill: "none", stroke: "#1F4A2E", "stroke-width": 3 }));
+
+  yearly.forEach(function(d){
+    svg.appendChild(svgEl("circle", { cx: xp(d.year), cy: yp(d.monthlyCashflow), r: 4, fill: "#1F4A2E" }));
+  });
+
+  c.appendChild(svg);
+}
+
+// === RENDER ===
+
+function renderAll() {
+  var r = compute();
+  var s = r.summary;
+
+  // KPI cards
+  document.getElementById("kpi-monthly").textContent = fmtKc(s.yearOneNetMonthly);
+  document.getElementById("kpi-monthly-sub").textContent = s.yearOneNetMonthly > 0 ? "po splátkách · výdělek" : "po splátkách · doplácíte";
+  document.getElementById("kpi-payback").textContent = fmtYears(s.paybackYear);
+  document.getElementById("kpi-payback-sub").textContent = s.ownAmount > 0 ? fmtKc(s.ownAmount) + " vlastních" : "plně financováno";
+  document.getElementById("kpi-profit").textContent = fmtKc(s.totalProfit);
+  document.getElementById("kpi-payment").textContent = fmtKc(s.totalMonthlyPayment);
+  document.getElementById("kpi-payment-sub").textContent = "ESSOX " + fmtKc(s.essoxMonthly) + " + úvěr " + fmtKc(s.bankMonthly);
+
+  // Breakdown
+  var breakdown = [
+    { name: "Peak shaving", value: s.peakShavingYear, color: "#1F4A2E" },
+    { name: "Arbitráž", value: s.arbitrageYear, color: "#3A8246" },
+    { name: "EV nabíjení", value: s.evYearBase, color: "#6FA86C" },
+    { name: "FVE přetoky", value: s.fveYear, color: "#D4A93C" },
+    { name: "Vítr přetoky", value: s.windYear, color: "#8B7355" }
+  ].filter(function(d){ return d.value > 0; });
+
+  document.getElementById("rev-total").textContent = fmtKc(s.yearOneRevenue);
+
+  var bd = document.getElementById("breakdown");
+  bd.innerHTML = "";
+  breakdown.forEach(function(d) {
+    var pct = s.yearOneRevenue > 0 ? (d.value / s.yearOneRevenue) * 100 : 0;
+    var row = document.createElement("div");
+    row.className = "breakdown-row";
+
+    var head = document.createElement("div");
+    head.className = "breakdown-head-row";
+    var name = document.createElement("span");
+    name.className = "breakdown-name";
+    var dot = document.createElement("span");
+    dot.className = "dot";
+    dot.style.background = d.color;
+    name.appendChild(dot);
+    name.appendChild(document.createTextNode(d.name));
+    var val = document.createElement("span");
+    val.className = "breakdown-value";
+    val.innerHTML = fmtKc(d.value) + ' <span class="breakdown-pct">(' + pct.toFixed(0) + " %)</span>";
+    head.appendChild(name);
+    head.appendChild(val);
+    row.appendChild(head);
+
+    var bar = document.createElement("div");
+    bar.className = "breakdown-bar";
+    var fill = document.createElement("div");
+    fill.className = "breakdown-bar-fill";
+    fill.style.width = pct + "%";
+    fill.style.background = d.color;
+    bar.appendChild(fill);
+    row.appendChild(bar);
+
+    bd.appendChild(row);
+  });
+
+  // Charts
+  drawCumulative(r.yearly);
+  drawStackedBars(r.yearly);
+  drawMonthly(r.yearly);
+
+  // Table
+  var tb = document.getElementById("table-body");
+  tb.innerHTML = "";
+  r.yearly.forEach(function(y) {
+    var tr = document.createElement("tr");
+    var cells = [
+      { v: y.year, s: "" },
+      { v: fmtKc(y.revenue), s: "" },
+      { v: fmtKc(y.essoxPayment + y.bankPayment), s: "color:var(--text-muted)" },
+      { v: fmtKc(y.opex), s: "color:var(--text-muted)" },
+      { v: fmtKc(y.netCashflow), s: "font-weight:700;color:" + (y.netCashflow > 0 ? "var(--positive)" : "var(--negative)") },
+      { v: fmtKc(y.monthlyCashflow), s: "font-weight:600;color:" + (y.monthlyCashflow > 0 ? "var(--positive)" : "var(--negative)") },
+      { v: fmtKc(y.cumulativeCashflow), s: "font-weight:700;color:" + (y.cumulativeCashflow >= 0 ? "var(--primary)" : "var(--negative)") }
+    ];
+    cells.forEach(function(cd) {
+      var td = document.createElement("td");
+      td.textContent = cd.v;
+      if (cd.s) td.setAttribute("style", cd.s);
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+
+  // Closing summary
+  document.getElementById("sum-investment").textContent = fmtKc(s.baseInvestment);
+  document.getElementById("sum-investment-sub").textContent = "Vlastní: " + fmtKc(s.ownAmount) + " · ESSOX: " + fmtKc(s.essoxAmount) + " · Úvěr: " + fmtKc(s.bankAmount);
+  document.getElementById("sum-revenue").textContent = fmtKc(s.totalRevenue);
+  document.getElementById("sum-revenue-sub").textContent = "Náklady (splátky + OPEX): " + fmtKc(s.totalCosts);
+  document.getElementById("sum-profit").textContent = fmtKc(s.totalProfit);
+  document.getElementById("sum-payback").textContent = fmtYears(s.paybackYear);
+
+  // Rebuild inputs (kvůli badge update + preset active state)
+  buildInputs();
+}
+
+// START
+buildInputs();
+renderAll();
 </script>
+
 </body>
 </html>
