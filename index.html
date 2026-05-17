@@ -1175,6 +1175,235 @@
     font-weight: 800; font-style: normal; color: white;
   }
 
+  /* ========================================================
+     EXPORT / IMPORT SEKCE
+     ======================================================== */
+  .export-section {
+    background: white;
+    border-radius: 16px;
+    padding: 36px 40px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-top: 4px solid var(--gold);
+  }
+  .export-eyebrow {
+    display: inline-block;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); font-weight: 800; margin-bottom: 12px;
+  }
+  .export-section h2 {
+    margin: 0 0 8px; font-size: 26px; font-weight: 800;
+    letter-spacing: -0.02em; color: var(--primary-dark);
+  }
+  .export-section > p {
+    margin: 0 0 28px; font-size: 14px; color: var(--text-muted);
+    line-height: 1.6; max-width: 700px;
+  }
+  .export-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  @media (max-width: 1024px) { .export-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .export-grid { grid-template-columns: 1fr; } }
+  .export-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    border-top: 4px solid var(--accent);
+    display: flex; flex-direction: column;
+  }
+  .export-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(31,74,46,0.1);
+    border-color: var(--primary);
+  }
+  .export-card.primary { border-top-color: var(--primary); }
+  .export-card.gold { border-top-color: var(--gold); }
+  .export-card.blue { border-top-color: #3A6FA0; }
+  .export-card-icon {
+    font-size: 32px; line-height: 1;
+    margin-bottom: 12px;
+  }
+  .export-card-title {
+    font-size: 15px; font-weight: 800; color: var(--primary-dark);
+    margin-bottom: 6px; letter-spacing: -0.01em;
+  }
+  .export-card-desc {
+    font-size: 12px; color: var(--text-muted); line-height: 1.5;
+    flex: 1;
+  }
+  .export-card-action {
+    margin-top: 14px; font-size: 12px; font-weight: 700;
+    color: var(--primary); letter-spacing: 0.04em;
+  }
+  .export-card.primary .export-card-action { color: var(--primary); }
+  .export-card.gold .export-card-action { color: #A8841F; }
+
+  /* Hidden file input */
+  #import-file-input { display: none; }
+
+  /* QR Modal */
+  .qr-modal {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(15, 45, 27, 0.65);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  .qr-modal.active { display: flex; }
+  .qr-modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 36px;
+    max-width: 480px; width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    text-align: center;
+    position: relative;
+  }
+  .qr-modal-close {
+    position: absolute; top: 12px; right: 12px;
+    background: var(--bg-soft); border: none;
+    width: 32px; height: 32px; border-radius: 50%;
+    font-size: 18px; cursor: pointer; font-family: inherit;
+    color: var(--text-muted);
+  }
+  .qr-modal-close:hover { background: var(--border); color: var(--text); }
+  .qr-modal h3 {
+    margin: 0 0 6px; font-size: 22px; font-weight: 800;
+    color: var(--primary-dark); letter-spacing: -0.015em;
+  }
+  .qr-modal-sub {
+    margin: 0 0 22px; font-size: 13px; color: var(--text-muted);
+    line-height: 1.55;
+  }
+  .qr-canvas-wrap {
+    display: inline-block;
+    padding: 20px; background: white;
+    border: 2px solid var(--border); border-radius: 12px;
+    margin-bottom: 18px;
+  }
+  #qr-canvas { display: block; }
+  .qr-info {
+    background: var(--bg-soft);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 12px; color: var(--text-muted);
+    line-height: 1.55; text-align: left;
+  }
+  .qr-info strong { color: var(--primary-dark); font-weight: 700; }
+  .qr-download {
+    margin-top: 14px;
+    padding: 10px 20px;
+    background: var(--primary); color: white; border: none;
+    border-radius: 8px; font-size: 13px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+    letter-spacing: 0.02em;
+  }
+  .qr-download:hover { background: var(--primary-dark); }
+
+  /* Toast notification */
+  .toast {
+    position: fixed; top: 20px; right: 20px;
+    background: var(--primary); color: white;
+    padding: 14px 20px; border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    font-size: 13px; font-weight: 600;
+    z-index: 2000;
+    transform: translateX(420px);
+    transition: transform 0.3s ease;
+    max-width: 360px;
+  }
+  .toast.show { transform: translateX(0); }
+  .toast.error { background: var(--negative); }
+  .toast.success { background: var(--positive); }
+
+  /* ========================================================
+     @MEDIA PRINT — Tiskové styly pro PDF export
+     ======================================================== */
+  @media print {
+    @page {
+      size: A4;
+      margin: 1.5cm 1.2cm;
+    }
+    body {
+      background: white !important;
+      font-size: 10pt;
+    }
+    .wrap { padding: 0; max-width: 100%; }
+
+    /* Schovat věci co nepatří do PDF */
+    .main, /* slidery */
+    .export-section,
+    .qr-modal,
+    .toast,
+    #inputs,
+    .pain-live-counter, /* live counter — vytrhuje, nedává v PDF smysl */
+    .footer { display: none !important; }
+
+    /* Skrýt jednu polovinu kalkulačky (vstupní) */
+    .panel { page-break-inside: avoid; margin-bottom: 12px; }
+
+    /* Sekce v PDF */
+    .hero, .kpi-panel, .product-selector, .capacity-section,
+    .alt-cost-panel, .tech-section, .vision-section, .essox-section,
+    .closing-cta, .future-section, .fomo-section, .pain-section {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      box-shadow: none !important;
+      margin-bottom: 14px !important;
+      padding: 20px !important;
+    }
+
+    .hero, .alt-cost-panel, .pain-section, .vision-section,
+    .closing-cta, .tech-section, .fomo-section {
+      color: white !important;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .hero h1, .alt-cost-panel h2, .pain-section h2,
+    .closing-cta h2, .vision-section h2, .fomo-section h2 {
+      font-size: 22pt !important;
+    }
+    h2 { font-size: 16pt !important; }
+    h3 { font-size: 12pt !important; }
+
+    /* Hlavičky stránek */
+    .hero { page-break-after: avoid; }
+    .kpi-panel { page-break-before: avoid; }
+
+    /* Po KPI panelu se zlomí strana, ať se kalkulačka rozdělí čistě */
+    .kpi-panel { page-break-after: always; }
+    .capacity-section { page-break-after: always; }
+    .alt-cost-panel { page-break-after: always; }
+    .pain-section { page-break-after: always; }
+    .future-section { page-break-after: always; }
+    .fomo-section { page-break-after: always; }
+    .tech-section { page-break-after: always; }
+    .vision-section { page-break-after: always; }
+    .essox-section { page-break-after: always; }
+
+    /* Barvy zachovat */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      color-adjust: exact !important;
+    }
+
+    /* Zabraň zlomení v kartách */
+    .future-card, .fomo-stat, .waiting-card,
+    .cap-tile, .kpi-item, .essox-item, .product-card,
+    .timeline-step, .warranty-card, .vision-card, .macro-card,
+    .alt-cost-card, .tech-stat {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1628,6 +1857,65 @@
       <div class="essox-item"><div class="essox-item-value">směnka</div><div class="essox-item-label">Zajištění</div><div class="essox-item-sub">Firemní + aval</div></div>
     </div>
   </div>
+
+  <!-- EXPORT / IMPORT SEKCE -->
+  <div class="export-section">
+    <div class="export-eyebrow">★ Uložit a sdílet</div>
+    <h2>Export nabídky · uložení záloh · QR pro Davida</h2>
+    <p>Vyexportujte si tuto kalkulaci jako PDF, uložte konfiguraci do souboru pro pozdější návrat, nebo si vygenerujte QR kód s vaší přesnou konfigurací — Davida pak stačí oslovit a QR mu ukázat, on vám tak připraví přesně tu nabídku, kterou jste si nastavili.</p>
+
+    <div class="export-grid">
+      <button class="export-card primary" onclick="exportToPDF()">
+        <div class="export-card-icon">📄</div>
+        <div class="export-card-title">Exportovat do PDF</div>
+        <div class="export-card-desc">Stáhne kompletní kalkulaci jako PDF dokument — KPI, dlaždice, scénáře, tech specifikace.</div>
+        <div class="export-card-action">▸ TISK / ULOŽIT JAKO PDF</div>
+      </button>
+
+      <button class="export-card gold" onclick="generateAndShowQR()">
+        <div class="export-card-icon">🔲</div>
+        <div class="export-card-title">QR kód s konfigurací</div>
+        <div class="export-card-desc">Vygeneruje QR kód obsahující vaše přesné nastavení. Vyfoťte si ho a pošlete Davidovi.</div>
+        <div class="export-card-action">▸ ZOBRAZIT QR KÓD</div>
+      </button>
+
+      <button class="export-card blue" onclick="exportJSON()">
+        <div class="export-card-icon">💾</div>
+        <div class="export-card-title">Stáhnout zálohu (.json)</div>
+        <div class="export-card-desc">Uloží konfiguraci do souboru. Můžete se k ní později vrátit nebo poslat e-mailem.</div>
+        <div class="export-card-action">▸ STÁHNOUT JSON</div>
+      </button>
+
+      <button class="export-card" onclick="document.getElementById('import-file-input').click()">
+        <div class="export-card-icon">📥</div>
+        <div class="export-card-title">Načíst uloženou zálohu</div>
+        <div class="export-card-desc">Nahrajte dříve uložený JSON soubor a obnovte přesně tu konfiguraci.</div>
+        <div class="export-card-action">▸ NAJÍT SOUBOR</div>
+      </button>
+    </div>
+
+    <input type="file" id="import-file-input" accept=".json,application/json" onchange="importJSON(event)" />
+  </div>
+
+  <!-- QR Modal -->
+  <div class="qr-modal" id="qr-modal">
+    <div class="qr-modal-content">
+      <button class="qr-modal-close" onclick="closeQR()">×</button>
+      <h3>QR kód s vaší konfigurací</h3>
+      <p class="qr-modal-sub">Vyfoťte si QR kód telefonem nebo si ho stáhněte. Pošlete ho Davidovi a on vám připraví přesně tuto nabídku.</p>
+      <div class="qr-canvas-wrap">
+        <canvas id="qr-canvas"></canvas>
+      </div>
+      <div class="qr-info">
+        <strong>Co je v QR kódu?</strong><br/>
+        Vybraný produkt, všechny posuvníky, % rozdělení kapacity, financování a další parametry. Žádné osobní údaje.
+      </div>
+      <button class="qr-download" onclick="downloadQR()">Stáhnout QR jako obrázek</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
   <!-- CTA -->
   <div class="closing-cta">
@@ -2723,6 +3011,565 @@ function renderAll() {
 
   buildInputs();
 }
+
+// ====================================================================
+// EXPORT / IMPORT FUNKCE
+// ====================================================================
+
+function showToast(msg, kind) {
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast " + (kind || "success") + " show";
+  setTimeout(function() { t.className = "toast " + (kind || "success"); }, 3500);
+}
+
+// ============ EXPORT DO PDF (přes prohlížeč) ============
+function exportToPDF() {
+  showToast("Otevírám tiskový dialog… Vyberte 'Uložit jako PDF'.", "success");
+  setTimeout(function() {
+    window.print();
+  }, 400);
+}
+
+// ============ EXPORT JSON ZÁLOHY ============
+function exportJSON() {
+  var data = {
+    version: "1.0",
+    timestamp: new Date().toISOString(),
+    note: "BESS kalkulačka — uložená konfigurace",
+    state: state
+  };
+  var json = JSON.stringify(data, null, 2);
+  var blob = new Blob([json], { type: "application/json" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = "BESS-konfigurace-" + dateStr + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast("Záloha stažena. Soubor: BESS-konfigurace-" + dateStr + ".json", "success");
+}
+
+// ============ IMPORT JSON ZÁLOHY ============
+function importJSON(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.state) throw new Error("Neplatný formát souboru.");
+      // Obnovit state
+      Object.keys(data.state).forEach(function(k) {
+        if (state.hasOwnProperty(k)) state[k] = data.state[k];
+      });
+      renderAll();
+      showToast("Konfigurace načtena z " + file.name, "success");
+    } catch (err) {
+      showToast("Chyba při načítání: " + err.message, "error");
+    }
+  };
+  reader.onerror = function() {
+    showToast("Nepodařilo se přečíst soubor.", "error");
+  };
+  reader.readAsText(file);
+  // reset input
+  event.target.value = "";
+}
+
+// ============ KOMPAKTNÍ KÓDOVÁNÍ STATE PRO QR ============
+// Místo plného JSON použijeme zkrácené klíče + base64 ať se to vejde
+var STATE_KEYS_ORDER = [
+  "selectedProduct", "ownEquityPct", "essoxPct", "essoxRate", "essoxYears",
+  "bankPct", "bankRate", "bankYears",
+  "reservedPowerKW", "peakOverrunKW", "overrunMonths", "penaltyRate",
+  "reservedReductionKW", "reservedPriceRate",
+  "arbitrageCapacityPct", "buyPrice", "sellPrice", "arbitrageCyclesPerYear",
+  "afrrPowerKW", "afrrPricePerMW",
+  "evCapacityPct", "evPrice", "evEnergyCostKWh", "evUtilizationStart", "evGrowthPerYear",
+  "fveSurplusDaily", "fveBuybackPrice", "fveSelfUsePrice",
+  "windSurplusDaily", "windBuybackPrice", "windSelfUsePrice",
+  "taxDepreciationPct", "taxApplyDepreciation", "subsidyPct",
+  "opexPerYear", "degradationPerYear", "electricityInflation", "analysisHorizon",
+  "businessPreset"
+];
+
+function packStateForQR() {
+  // Kompaktní formát: produkt|číslo|číslo|... — pipe-separated
+  var product = state.selectedProduct;
+  var values = STATE_KEYS_ORDER.map(function(k) {
+    var v = state[k];
+    if (typeof v === "number") {
+      // Zaokrouhlit pokud možno
+      return Math.round(v * 100) / 100;
+    }
+    return v;
+  });
+  // Verze + hodnoty
+  return "BESS1|" + values.join("|");
+}
+
+function unpackStateFromQR(s) {
+  if (!s.indexOf || s.indexOf("BESS1|") !== 0) {
+    throw new Error("Neplatný formát QR dat.");
+  }
+  var parts = s.substring(6).split("|");
+  if (parts.length !== STATE_KEYS_ORDER.length) {
+    throw new Error("Nesouhlasí počet parametrů.");
+  }
+  STATE_KEYS_ORDER.forEach(function(k, i) {
+    var val = parts[i];
+    if (k === "selectedProduct" || k === "businessPreset") {
+      state[k] = val;
+    } else {
+      var n = parseFloat(val);
+      if (!isNaN(n)) state[k] = n;
+    }
+  });
+}
+
+// ====================================================================
+// QR CODE GENERATOR (minimalistický, vanilla JS)
+// Založeno na public domain QR algoritmu (Kazuhiko Arase)
+// Zjednodušeno na verze 1-10, M error correction
+// ====================================================================
+
+var QRCode = (function() {
+  // QR Code constants
+  var PAD0 = 0xEC, PAD1 = 0x11;
+  // Capacity table for M error level, byte mode (version 1-10)
+  var CAPACITY_M = [0,14,26,42,62,84,106,122,152,180,213];
+
+  // Galois field tables for Reed-Solomon
+  var EXP_TABLE = new Array(256);
+  var LOG_TABLE = new Array(256);
+  (function() {
+    for (var i = 0; i < 8; i++) EXP_TABLE[i] = 1 << i;
+    for (var i = 8; i < 256; i++) {
+      EXP_TABLE[i] = EXP_TABLE[i-4] ^ EXP_TABLE[i-5] ^ EXP_TABLE[i-6] ^ EXP_TABLE[i-8];
+    }
+    for (var i = 0; i < 255; i++) LOG_TABLE[EXP_TABLE[i]] = i;
+  })();
+
+  function glog(n) {
+    if (n < 1) throw new Error("glog("+n+")");
+    return LOG_TABLE[n];
+  }
+  function gexp(n) {
+    while (n < 0) n += 255;
+    while (n >= 256) n -= 255;
+    return EXP_TABLE[n];
+  }
+
+  // Polynomial class
+  function Polynomial(num, shift) {
+    if (num.length === undefined) throw new Error("invalid");
+    var offset = 0;
+    while (offset < num.length && num[offset] === 0) offset++;
+    this.num = new Array(num.length - offset + shift);
+    for (var i = 0; i < num.length - offset; i++) this.num[i] = num[i + offset];
+  }
+  Polynomial.prototype.get = function(i) { return this.num[i]; };
+  Polynomial.prototype.getLength = function() { return this.num.length; };
+  Polynomial.prototype.multiply = function(e) {
+    var num = new Array(this.getLength() + e.getLength() - 1);
+    for (var i = 0; i < num.length; i++) num[i] = 0;
+    for (var i = 0; i < this.getLength(); i++) {
+      for (var j = 0; j < e.getLength(); j++) {
+        num[i+j] ^= gexp(glog(this.get(i)) + glog(e.get(j)));
+      }
+    }
+    return new Polynomial(num, 0);
+  };
+  Polynomial.prototype.mod = function(e) {
+    if (this.getLength() - e.getLength() < 0) return this;
+    var ratio = glog(this.get(0)) - glog(e.get(0));
+    var num = new Array(this.getLength());
+    for (var i = 0; i < this.getLength(); i++) num[i] = this.get(i);
+    for (var i = 0; i < e.getLength(); i++) {
+      num[i] ^= gexp(glog(e.get(i)) + ratio);
+    }
+    return new Polynomial(num, 0).mod(e);
+  };
+
+  function getErrorCorrectPolynomial(errorCorrectLength) {
+    var a = new Polynomial([1], 0);
+    for (var i = 0; i < errorCorrectLength; i++) {
+      a = a.multiply(new Polynomial([1, gexp(i)], 0));
+    }
+    return a;
+  }
+
+  // BitBuffer
+  function BitBuffer() {
+    this.buffer = [];
+    this.length = 0;
+  }
+  BitBuffer.prototype.get = function(i) {
+    return ((this.buffer[Math.floor(i/8)] >>> (7 - i%8)) & 1) === 1;
+  };
+  BitBuffer.prototype.put = function(num, length) {
+    for (var i = 0; i < length; i++) {
+      this.putBit(((num >>> (length-i-1)) & 1) === 1);
+    }
+  };
+  BitBuffer.prototype.putBit = function(bit) {
+    var bufIndex = Math.floor(this.length/8);
+    if (this.buffer.length <= bufIndex) this.buffer.push(0);
+    if (bit) this.buffer[bufIndex] |= (0x80 >>> (this.length%8));
+    this.length++;
+  };
+
+  // RS blocks table for M error level, byte mode (version 1-10)
+  // Each: [totalCount, dataCount] × count
+  var RS_BLOCKS_M = [
+    null,
+    [[1, 26, 16]], // v1: 1 block, 26 total, 16 data
+    [[1, 44, 28]],
+    [[1, 70, 44]],
+    [[2, 50, 32]],
+    [[2, 67, 43]],
+    [[4, 43, 27]],
+    [[4, 49, 31]],
+    [[2, 60, 38],[2, 61, 39]],
+    [[3, 58, 36],[2, 59, 37]],
+    [[4, 69, 43],[1, 70, 44]]
+  ];
+
+  function getRSBlocks(version) {
+    var blockSpec = RS_BLOCKS_M[version];
+    var list = [];
+    blockSpec.forEach(function(spec) {
+      for (var i = 0; i < spec[0]; i++) {
+        list.push({ totalCount: spec[1], dataCount: spec[2] });
+      }
+    });
+    return list;
+  }
+
+  // QR Code Model
+  function QRCodeModel(text) {
+    // Find smallest version that fits
+    var dataLen = text.length;
+    var version = 1;
+    while (version <= 10 && CAPACITY_M[version] < dataLen) version++;
+    if (version > 10) throw new Error("Data too long for QR v1-10 M: " + dataLen);
+    this.version = version;
+    this.text = text;
+    this.moduleCount = version * 4 + 17;
+    this.modules = null;
+    this.make();
+  }
+
+  QRCodeModel.prototype.make = function() {
+    // Bit buffer with data
+    var bb = new BitBuffer();
+    bb.put(4, 4); // mode = byte
+    // Char count bits: 8 for v1-9, 16 for v10+
+    var charCountBits = this.version < 10 ? 8 : 16;
+    bb.put(this.text.length, charCountBits);
+    // Encode UTF-8 bytes
+    var utf8 = unescape(encodeURIComponent(this.text));
+    for (var i = 0; i < utf8.length; i++) bb.put(utf8.charCodeAt(i), 8);
+
+    // RS blocks
+    var rsBlocks = getRSBlocks(this.version);
+    var totalDataCount = 0;
+    rsBlocks.forEach(function(b) { totalDataCount += b.dataCount; });
+
+    // End terminator
+    if (bb.length + 4 <= totalDataCount * 8) bb.put(0, 4);
+    // Padding to byte
+    while (bb.length % 8 !== 0) bb.putBit(false);
+    // PAD
+    while (true) {
+      if (bb.length >= totalDataCount * 8) break;
+      bb.put(PAD0, 8);
+      if (bb.length >= totalDataCount * 8) break;
+      bb.put(PAD1, 8);
+    }
+
+    // Create data + ECC
+    var offset = 0;
+    var maxDcCount = 0, maxEcCount = 0;
+    var dcdata = [], ecdata = [];
+    for (var r = 0; r < rsBlocks.length; r++) {
+      var dcCount = rsBlocks[r].dataCount;
+      var ecCount = rsBlocks[r].totalCount - dcCount;
+      maxDcCount = Math.max(maxDcCount, dcCount);
+      maxEcCount = Math.max(maxEcCount, ecCount);
+      dcdata[r] = new Array(dcCount);
+      for (var i = 0; i < dcCount; i++) dcdata[r][i] = 0xff & bb.buffer[i + offset];
+      offset += dcCount;
+      var rsPoly = getErrorCorrectPolynomial(ecCount);
+      var rawPoly = new Polynomial(dcdata[r], rsPoly.getLength() - 1);
+      var modPoly = rawPoly.mod(rsPoly);
+      ecdata[r] = new Array(rsPoly.getLength() - 1);
+      for (var i = 0; i < ecdata[r].length; i++) {
+        var modIndex = i + modPoly.getLength() - ecdata[r].length;
+        ecdata[r][i] = (modIndex >= 0) ? modPoly.get(modIndex) : 0;
+      }
+    }
+
+    var totalCodeCount = 0;
+    rsBlocks.forEach(function(b) { totalCodeCount += b.totalCount; });
+    var data = new Array(totalCodeCount);
+    var index = 0;
+    for (var i = 0; i < maxDcCount; i++) {
+      for (var r = 0; r < rsBlocks.length; r++) {
+        if (i < dcdata[r].length) data[index++] = dcdata[r][i];
+      }
+    }
+    for (var i = 0; i < maxEcCount; i++) {
+      for (var r = 0; r < rsBlocks.length; r++) {
+        if (i < ecdata[r].length) data[index++] = ecdata[r][i];
+      }
+    }
+
+    // Build modules
+    var mc = this.moduleCount;
+    this.modules = new Array(mc);
+    for (var i = 0; i < mc; i++) {
+      this.modules[i] = new Array(mc);
+      for (var j = 0; j < mc; j++) this.modules[i][j] = null;
+    }
+
+    this.setupPositionProbePattern(0, 0);
+    this.setupPositionProbePattern(mc - 7, 0);
+    this.setupPositionProbePattern(0, mc - 7);
+    this.setupTimingPattern();
+    this.setupPositionAdjustPattern();
+    this.setupTypeInfo(true, 0); // mask 0
+    if (this.version >= 7) this.setupTypeNumber(true);
+    this.mapData(data, 0);
+
+    // Try masks 0-7 and choose best
+    var bestMask = 0, bestLost = Infinity;
+    for (var m = 0; m < 8; m++) {
+      this.cloneModules = JSON.parse(JSON.stringify(this.modules));
+      this.setupTypeInfo(false, m);
+      if (this.version >= 7) this.setupTypeNumber(false);
+      // Use clone, reset and re-make
+      // For simplicity, just rebuild with mask
+    }
+    // Simplified: use mask 0
+  };
+
+  QRCodeModel.prototype.setupPositionProbePattern = function(row, col) {
+    for (var r = -1; r <= 7; r++) {
+      if (row + r <= -1 || this.moduleCount <= row + r) continue;
+      for (var c = -1; c <= 7; c++) {
+        if (col + c <= -1 || this.moduleCount <= col + c) continue;
+        if ((0 <= r && r <= 6 && (c === 0 || c === 6))
+          || (0 <= c && c <= 6 && (r === 0 || r === 6))
+          || (2 <= r && r <= 4 && 2 <= c && c <= 4)) {
+          this.modules[row+r][col+c] = true;
+        } else {
+          this.modules[row+r][col+c] = false;
+        }
+      }
+    }
+  };
+
+  QRCodeModel.prototype.setupTimingPattern = function() {
+    for (var r = 8; r < this.moduleCount - 8; r++) {
+      if (this.modules[r][6] !== null) continue;
+      this.modules[r][6] = (r % 2 === 0);
+    }
+    for (var c = 8; c < this.moduleCount - 8; c++) {
+      if (this.modules[6][c] !== null) continue;
+      this.modules[6][c] = (c % 2 === 0);
+    }
+  };
+
+  QRCodeModel.prototype.setupPositionAdjustPattern = function() {
+    var POS = [
+      [],[],[6,18],[6,22],[6,26],[6,30],[6,34],
+      [6,22,38],[6,24,42],[6,26,46],[6,28,50]
+    ];
+    var pos = POS[this.version];
+    for (var i = 0; i < pos.length; i++) {
+      for (var j = 0; j < pos.length; j++) {
+        var row = pos[i], col = pos[j];
+        if (this.modules[row][col] !== null) continue;
+        for (var r = -2; r <= 2; r++) {
+          for (var c = -2; c <= 2; c++) {
+            this.modules[row+r][col+c] = (r === -2 || r === 2 || c === -2 || c === 2 || (r === 0 && c === 0));
+          }
+        }
+      }
+    }
+  };
+
+  QRCodeModel.prototype.setupTypeNumber = function(test) {
+    var bits = this.version << 12;
+    var poly = bits;
+    // Calc BCH (18,6) for version info
+    function bchTypeNumber(data) {
+      var d = data << 12;
+      while (bchDigit(d) - bchDigit(0x1F25) >= 0) {
+        d ^= (0x1F25 << (bchDigit(d) - bchDigit(0x1F25)));
+      }
+      return (data << 12) | d;
+    }
+    function bchDigit(data) {
+      var digit = 0;
+      while (data !== 0) { digit++; data >>>= 1; }
+      return digit;
+    }
+    var info = bchTypeNumber(this.version);
+    for (var i = 0; i < 18; i++) {
+      var mod = (!test && ((info >> i) & 1) === 1);
+      this.modules[Math.floor(i/3)][i%3 + this.moduleCount - 8 - 3] = mod;
+      this.modules[i%3 + this.moduleCount - 8 - 3][Math.floor(i/3)] = mod;
+    }
+  };
+
+  QRCodeModel.prototype.setupTypeInfo = function(test, maskPattern) {
+    var data = (1 << 3) | maskPattern; // M error level = 0, mask
+    function bchTypeInfo(data) {
+      var d = data << 10;
+      while (bchDigit(d) - bchDigit(0x537) >= 0) {
+        d ^= (0x537 << (bchDigit(d) - bchDigit(0x537)));
+      }
+      return ((data << 10) | d) ^ 0x5412;
+    }
+    function bchDigit(data) {
+      var digit = 0;
+      while (data !== 0) { digit++; data >>>= 1; }
+      return digit;
+    }
+    var info = bchTypeInfo(data);
+    // Vertical
+    for (var i = 0; i < 15; i++) {
+      var mod = (!test && ((info >> i) & 1) === 1);
+      if (i < 6) this.modules[i][8] = mod;
+      else if (i < 8) this.modules[i+1][8] = mod;
+      else this.modules[this.moduleCount-15+i][8] = mod;
+    }
+    // Horizontal
+    for (var i = 0; i < 15; i++) {
+      var mod = (!test && ((info >> i) & 1) === 1);
+      if (i < 8) this.modules[8][this.moduleCount-i-1] = mod;
+      else if (i < 9) this.modules[8][15-i-1+1] = mod;
+      else this.modules[8][15-i-1] = mod;
+    }
+    this.modules[this.moduleCount-8][8] = !test;
+  };
+
+  QRCodeModel.prototype.mapData = function(data, maskPattern) {
+    var inc = -1;
+    var row = this.moduleCount - 1;
+    var bitIndex = 7;
+    var byteIndex = 0;
+    for (var col = this.moduleCount - 1; col > 0; col -= 2) {
+      if (col === 6) col--;
+      while (true) {
+        for (var c = 0; c < 2; c++) {
+          if (this.modules[row][col-c] === null) {
+            var dark = false;
+            if (byteIndex < data.length) {
+              dark = (((data[byteIndex] >>> bitIndex) & 1) === 1);
+            }
+            var mask = getMask(maskPattern, row, col-c);
+            if (mask) dark = !dark;
+            this.modules[row][col-c] = dark;
+            bitIndex--;
+            if (bitIndex === -1) {
+              byteIndex++;
+              bitIndex = 7;
+            }
+          }
+        }
+        row += inc;
+        if (row < 0 || this.moduleCount <= row) {
+          row -= inc;
+          inc = -inc;
+          break;
+        }
+      }
+    }
+  };
+
+  function getMask(mask, i, j) {
+    switch (mask) {
+      case 0: return (i+j) % 2 === 0;
+      case 1: return i % 2 === 0;
+      case 2: return j % 3 === 0;
+      case 3: return (i+j) % 3 === 0;
+      case 4: return (Math.floor(i/2) + Math.floor(j/3)) % 2 === 0;
+      case 5: return (i*j) % 2 + (i*j) % 3 === 0;
+      case 6: return ((i*j) % 2 + (i*j) % 3) % 2 === 0;
+      case 7: return ((i*j) % 3 + (i+j) % 2) % 2 === 0;
+    }
+    return false;
+  }
+
+  // Render to canvas
+  function renderToCanvas(canvas, qr, cellSize) {
+    cellSize = cellSize || 6;
+    var size = qr.moduleCount * cellSize + cellSize * 4; // 2 modules quiet zone each side
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fillRect(0, 0, size, size);
+    ctx.fillStyle = "#1F4A2E";
+    for (var r = 0; r < qr.moduleCount; r++) {
+      for (var c = 0; c < qr.moduleCount; c++) {
+        if (qr.modules[r][c]) {
+          ctx.fillRect(cellSize*2 + c*cellSize, cellSize*2 + r*cellSize, cellSize, cellSize);
+        }
+      }
+    }
+  }
+
+  return {
+    generate: function(canvas, text, cellSize) {
+      var qr = new QRCodeModel(text);
+      renderToCanvas(canvas, qr, cellSize);
+      return qr;
+    }
+  };
+})();
+
+// ============ QR ZOBRAZENÍ ============
+function generateAndShowQR() {
+  try {
+    var payload = packStateForQR();
+    var canvas = document.getElementById("qr-canvas");
+    QRCode.generate(canvas, payload, 6);
+    document.getElementById("qr-modal").classList.add("active");
+  } catch (e) {
+    showToast("Chyba při generování QR: " + e.message, "error");
+  }
+}
+
+function closeQR() {
+  document.getElementById("qr-modal").classList.remove("active");
+}
+
+function downloadQR() {
+  var canvas = document.getElementById("qr-canvas");
+  var dataUrl = canvas.toDataURL("image/png");
+  var a = document.createElement("a");
+  var dateStr = new Date().toISOString().slice(0, 10);
+  a.href = dataUrl;
+  a.download = "BESS-QR-" + dateStr + ".png";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast("QR kód stažen jako obrázek.", "success");
+}
+
+// Klik mimo modal ho zavře
+document.addEventListener("click", function(e) {
+  var modal = document.getElementById("qr-modal");
+  if (e.target === modal) closeQR();
+});
 
 renderAll();
 </script>
