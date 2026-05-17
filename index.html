@@ -1176,6 +1176,207 @@
   }
 
   /* ========================================================
+     STICKY OFFER BAR (nahoře — číslo nabídky + tickery)
+     ======================================================== */
+  .offer-bar {
+    position: sticky; top: 0;
+    background: linear-gradient(135deg, #0F2D1B 0%, #163821 100%);
+    color: white;
+    padding: 14px 24px;
+    margin: -20px -20px 20px;
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    border-bottom: 2px solid var(--gold);
+    display: grid;
+    grid-template-columns: auto 1fr 1fr auto;
+    gap: 20px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .offer-bar { grid-template-columns: 1fr 1fr; gap: 10px; padding: 12px 16px; }
+    .offer-bar-id-block { grid-column: 1 / -1; }
+    .offer-bar-actions { grid-column: 1 / -1; }
+  }
+  .offer-bar-id-block {
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .offer-bar-label {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--gold-bright); font-weight: 700;
+  }
+  .offer-bar-id {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+    font-size: 15px; font-weight: 800; color: white;
+    letter-spacing: 0.05em;
+    line-height: 1;
+  }
+  .offer-bar-meta {
+    font-size: 10.5px; color: rgba(255,255,255,0.55);
+    margin-top: 4px;
+  }
+  .offer-bar-ticker {
+    display: flex; flex-direction: column; gap: 2px;
+    padding: 0 16px;
+    border-left: 1px solid rgba(255,255,255,0.12);
+  }
+  .offer-bar-ticker-label {
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    font-weight: 700; line-height: 1.2;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .offer-bar-ticker.lost .offer-bar-ticker-label { color: #FF8080; }
+  .offer-bar-ticker.forward .offer-bar-ticker-label { color: var(--gold-bright); }
+  .offer-bar-ticker-value {
+    font-size: 22px; font-weight: 900; letter-spacing: -0.025em;
+    line-height: 1.1; color: white;
+    font-variant-numeric: tabular-nums;
+  }
+  .offer-bar-ticker-sub {
+    font-size: 10px; color: rgba(255,255,255,0.55);
+    margin-top: 2px;
+  }
+  .offer-bar-live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #FF6B6B; animation: pulse-red 1.5s infinite;
+    display: inline-block;
+  }
+  .offer-bar-actions {
+    display: flex; gap: 8px;
+  }
+  .offer-bar-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 11.5px; font-weight: 700;
+    font-family: inherit; cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .offer-bar-btn:hover {
+    background: rgba(255,255,255,0.18);
+    border-color: var(--gold-bright);
+  }
+  .offer-bar-btn.gold {
+    background: var(--gold); border-color: var(--gold);
+    color: var(--primary-dark);
+  }
+  .offer-bar-btn.gold:hover {
+    background: var(--gold-bright); border-color: var(--gold-bright);
+  }
+  .offer-bar-status-locked {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--positive);
+    color: var(--accent-bright);
+    padding: 8px 14px; border-radius: 8px;
+    font-size: 11px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .offer-bar-status-locked::before {
+    content: '🔒'; font-size: 12px;
+  }
+
+  /* ========================================================
+     CYKLUS-AWARE — Vytíženost baterie panel
+     ======================================================== */
+  .util-section {
+    background: white;
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-left: 5px solid var(--gold);
+  }
+  .util-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 18px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .util-head-left h2 {
+    margin: 0 0 4px; font-size: 20px; font-weight: 800;
+    color: var(--primary-dark); letter-spacing: -0.015em;
+  }
+  .util-head-left p {
+    margin: 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;
+    max-width: 540px;
+  }
+  .util-gauge {
+    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  }
+  .util-gauge-label {
+    font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+    font-weight: 700; color: var(--text-muted);
+  }
+  .util-gauge-value {
+    font-size: 36px; font-weight: 900; letter-spacing: -0.025em;
+    line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .util-gauge-sub {
+    font-size: 11px; color: var(--text-muted);
+  }
+  .util-status-ok { color: var(--positive); }
+  .util-status-warn { color: var(--amber); }
+  .util-status-bad { color: var(--negative); }
+
+  .util-bar-wrap {
+    background: var(--bg-soft);
+    border-radius: 100px;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 10px;
+  }
+  .util-bar-100 {
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 100%;
+    border-right: 2px solid rgba(0,0,0,0.15);
+    pointer-events: none;
+    z-index: 2;
+  }
+  .util-bar-segments {
+    display: flex; height: 100%;
+  }
+  .util-bar-segment {
+    height: 100%;
+    transition: width 0.3s;
+  }
+  .util-energy-table {
+    margin-top: 16px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px;
+  }
+  .util-energy-card {
+    background: var(--bg-soft);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 11px;
+    border-left: 3px solid;
+  }
+  .util-energy-name {
+    font-weight: 700; color: var(--text); margin-bottom: 3px;
+  }
+  .util-energy-val {
+    color: var(--text-muted); font-variant-numeric: tabular-nums;
+  }
+  .util-warning {
+    background: #FFEEEE;
+    border: 1px solid var(--negative);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 13px;
+    color: #8B2A2A;
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .util-warning-icon {
+    font-size: 18px; line-height: 1; flex-shrink: 0;
+  }
+  .util-warning strong { color: var(--negative); font-weight: 800; }
+
+  /* ========================================================
      EXPORT / IMPORT SEKCE
      ======================================================== */
   .export-section {
@@ -1328,11 +1529,11 @@
   @media print {
     @page {
       size: A4;
-      margin: 1.5cm 1.2cm;
+      margin: 1.2cm 1cm;
     }
     body {
       background: white !important;
-      font-size: 10pt;
+      font-size: 9.5pt;
     }
     .wrap { padding: 0; max-width: 100%; }
 
@@ -1341,74 +1542,131 @@
     .export-section,
     .qr-modal,
     .toast,
+    .offer-bar-actions,
     #inputs,
-    .pain-live-counter, /* live counter — vytrhuje, nedává v PDF smysl */
+    .pain-live-counter,
     .footer { display: none !important; }
 
-    /* Skrýt jednu polovinu kalkulačky (vstupní) */
-    .panel { page-break-inside: avoid; margin-bottom: 12px; }
+    /* Sticky offer bar -> hlavička první stránky */
+    .offer-bar {
+      position: static !important;
+      margin: 0 0 12px !important;
+      padding: 12px 16px !important;
+      grid-template-columns: 1fr 1fr 1fr !important;
+      page-break-inside: avoid;
+      page-break-after: avoid;
+      box-shadow: none !important;
+    }
 
-    /* Sekce v PDF */
-    .hero, .kpi-panel, .product-selector, .capacity-section,
+    /* Sekce v PDF — hustší stránkování */
+    .hero, .kpi-panel, .product-selector, .capacity-section, .util-section,
     .alt-cost-panel, .tech-section, .vision-section, .essox-section,
-    .closing-cta, .future-section, .fomo-section, .pain-section {
+    .closing-cta, .future-section, .fomo-section, .pain-section, .panel {
       page-break-inside: avoid;
       break-inside: avoid;
       box-shadow: none !important;
-      margin-bottom: 14px !important;
-      padding: 20px !important;
+      margin-bottom: 10px !important;
+      padding: 16px 18px !important;
     }
 
+    /* Sticky pravidla — žádné prázdné půlstránky */
+    .hero { page-break-after: avoid; padding: 24px 20px !important; }
+    .offer-bar + .hero { margin-top: 0 !important; }
+
+    .hero h1 { font-size: 18pt !important; }
+    .alt-cost-panel h2, .pain-section h2,
+    .closing-cta h2, .vision-section h2, .fomo-section h2,
+    .future-section h2, .tech-section h2 {
+      font-size: 16pt !important;
+    }
+    h2 { font-size: 13pt !important; }
+    h3 { font-size: 11pt !important; }
+
+    /* Barvy zachovat */
     .hero, .alt-cost-panel, .pain-section, .vision-section,
-    .closing-cta, .tech-section, .fomo-section {
+    .closing-cta, .tech-section, .fomo-section, .offer-bar {
       color: white !important;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
-    .hero h1, .alt-cost-panel h2, .pain-section h2,
-    .closing-cta h2, .vision-section h2, .fomo-section h2 {
-      font-size: 22pt !important;
-    }
-    h2 { font-size: 16pt !important; }
-    h3 { font-size: 12pt !important; }
 
-    /* Hlavičky stránek */
-    .hero { page-break-after: avoid; }
-    .kpi-panel { page-break-before: avoid; }
+    /* Hustší layout — víc sekcí na stránku */
+    /* Po hlavičce (offer-bar + hero) jdou KPI hned za nimi bez zlomu */
+    .kpi-panel { page-break-before: auto; }
 
-    /* Po KPI panelu se zlomí strana, ať se kalkulačka rozdělí čistě */
-    .kpi-panel { page-break-after: always; }
-    .capacity-section { page-break-after: always; }
-    .alt-cost-panel { page-break-after: always; }
-    .pain-section { page-break-after: always; }
-    .future-section { page-break-after: always; }
-    .fomo-section { page-break-after: always; }
-    .tech-section { page-break-after: always; }
-    .vision-section { page-break-after: always; }
-    .essox-section { page-break-after: always; }
+    /* Page break strategie: jen po sekcích co opravdu zaberou víc */
+    .capacity-section,
+    .util-section,
+    .pain-section,
+    .future-section,
+    .fomo-section { page-break-after: auto; }
 
-    /* Barvy zachovat */
+    .alt-cost-panel,
+    .tech-section,
+    .essox-section,
+    .vision-section { page-break-before: auto; page-break-after: auto; }
+
+    /* Force breaks jen tam kde je to logické */
+    .tech-section { page-break-before: always; }
+
+    /* Barvy a tabulky */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
       color-adjust: exact !important;
     }
 
-    /* Zabraň zlomení v kartách */
     .future-card, .fomo-stat, .waiting-card,
     .cap-tile, .kpi-item, .essox-item, .product-card,
     .timeline-step, .warranty-card, .vision-card, .macro-card,
-    .alt-cost-card, .tech-stat {
+    .alt-cost-card, .tech-stat, .util-energy-card {
       page-break-inside: avoid;
       break-inside: avoid;
     }
+
+    /* Print-only blok s nabídkou (zákazníkovi) */
+    .print-only { display: block !important; }
+    .no-print { display: none !important; }
+
+    /* PDF tabulka detail po letech */
+    .panel { display: block !important; }
+    .panel:not(#panel-table) > .chart-wrap { display: none; }
+    table { font-size: 9pt; }
+    th, td { padding: 4px 6px !important; }
   }
 
+  .print-only { display: none; }
 </style>
 </head>
 <body>
 
 <div class="wrap">
+
+  <!-- STICKY OFFER BAR — číslo nabídky, časová značka, tickery -->
+  <div class="offer-bar">
+    <div class="offer-bar-id-block">
+      <div class="offer-bar-label">Číslo kalkulace</div>
+      <div class="offer-bar-id" id="offer-id">—</div>
+      <div class="offer-bar-meta" id="offer-meta">Zahájeno —</div>
+    </div>
+    <div class="offer-bar-ticker lost">
+      <div class="offer-bar-ticker-label">
+        <span class="offer-bar-live-dot"></span>
+        Od zahájení nabídky uniklo
+      </div>
+      <div class="offer-bar-ticker-value" id="ticker-lost">— Kč</div>
+      <div class="offer-bar-ticker-sub" id="ticker-lost-sub">—</div>
+    </div>
+    <div class="offer-bar-ticker forward">
+      <div class="offer-bar-ticker-label">📉 Co ztratíte za další měsíc čekání</div>
+      <div class="offer-bar-ticker-value" id="ticker-forward">— Kč</div>
+      <div class="offer-bar-ticker-sub">Při dnešní konfiguraci</div>
+    </div>
+    <div class="offer-bar-actions" id="offer-actions">
+      <button class="offer-bar-btn" onclick="newCalculation()">+ Nová kalkulace</button>
+      <button class="offer-bar-btn gold" onclick="lockAndExport()">🔒 Uzamknout a exportovat</button>
+    </div>
+  </div>
 
   <!-- HERO -->
   <div class="hero">
@@ -1429,6 +1687,30 @@
     <h2>2. Kde pracuje vaše kapacita</h2>
     <p class="cap-lead">Rozdělení baterie podle využití + <strong>vážený efekt</strong> (kolik vydělává každý segment na 1 % alokované kapacity). Tile s hvězdičkou = <strong>nejefektivnější další segment k rozvoji</strong>.</p>
     <div class="capacity-tiles" id="capacity-tiles"></div>
+  </div>
+
+  <!-- VYTÍŽENOST BATERIE (cyklus-aware) -->
+  <div class="util-section">
+    <div class="util-head">
+      <div class="util-head-left">
+        <h2>⚡ Fyzická vytíženost baterie</h2>
+        <p>Roční energie skrz baterii je omezená: <strong id="util-max-energy">— kWh/rok</strong>. Tady vidíte, kolik z té energie spotřebovávají jednotlivé zdroje. Při překročení 100 % se výnosy automaticky úměrně zkrátí, aby zůstaly fyzikálně reálné.</p>
+      </div>
+      <div class="util-gauge">
+        <div class="util-gauge-label">Vytíženost</div>
+        <div class="util-gauge-value" id="util-gauge-value">— %</div>
+        <div class="util-gauge-sub" id="util-gauge-sub">—</div>
+      </div>
+    </div>
+
+    <div class="util-bar-wrap">
+      <div class="util-bar-segments" id="util-bar-segments"></div>
+      <div class="util-bar-100"></div>
+    </div>
+
+    <div class="util-energy-table" id="util-energy-table"></div>
+
+    <div id="util-warning"></div>
   </div>
 
   <!-- KPI PANEL -->
@@ -2080,18 +2362,63 @@ function compute() {
 
   var arbUsable = en.arbitrage ? bessCapacityKWh * (x.arbitrageCapacityPct / 100) * 0.93 : 0;
   var arbMargin = x.sellPrice - x.buyPrice;
-  var arbitrageYear = arbUsable * x.arbitrageCyclesPerYear * arbMargin;
+  var arbitrageYearRaw = arbUsable * x.arbitrageCyclesPerYear * arbMargin;
 
   var afrrYear = en.afrr ? (x.afrrPowerKW / 1000) * x.afrrPricePerMW * 12 : 0;
 
   var evUsable = en.ev ? bessCapacityKWh * (x.evCapacityPct / 100) * 0.93 : 0;
   var evMargin = x.evPrice - x.evEnergyCostKWh;
-  var evYearBase = evUsable * 365 * (x.evUtilizationStart / 100) * evMargin;
+  var evYearBaseRaw = evUsable * 365 * (x.evUtilizationStart / 100) * evMargin;
 
-  var fveYear = en.fve ? x.fveSurplusDaily * 365 * (x.fveSelfUsePrice - x.fveBuybackPrice) : 0;
-  var windYear = en.wind ? x.windSurplusDaily * 365 * (x.windSelfUsePrice - x.windBuybackPrice) : 0;
+  var fveYearRaw = en.fve ? x.fveSurplusDaily * 365 * (x.fveSelfUsePrice - x.fveBuybackPrice) : 0;
+  var windYearRaw = en.wind ? x.windSurplusDaily * 365 * (x.windSelfUsePrice - x.windBuybackPrice) : 0;
+
+  // === CYKLUS-AWARE — fyzický limit energie ===
+  // Max roční energie skrz baterii = kapacita × cyklů × účinnost
+  // Pozn.: arbitrageCyclesPerYear odráží počet cyklů kalkulovaných pro arbitráž,
+  // ale fyzicky baterie zvládne podobné množství i pro jiné účely. Vezmeme max.
+  var maxCyclesPerYear = Math.max(x.arbitrageCyclesPerYear, 365); // alespoň 365 (denní cyklus)
+  var maxAnnualEnergy = bessCapacityKWh * maxCyclesPerYear * 0.93; // kWh/rok které proteknou
+
+  // Energetické nároky jednotlivých zdrojů (kWh/rok které spotřebují cykly)
+  var arbEnergy = arbUsable * x.arbitrageCyclesPerYear; // kWh/rok pro arbitráž
+  var evEnergy = evUsable * 365 * (x.evUtilizationStart / 100); // kWh/rok pro EV
+  // Peak shaving — kolik energie ročně reálně musí baterie dodat (zhruba)
+  // peakOverrunKW × průměrné 2 h/den špička × dnů s překročením v měsíci × měsíců
+  var peakEnergy = en.peak ? x.peakOverrunKW * 2 * 22 * x.overrunMonths : 0; // 22 prac. dní × 2h
+  var fveEnergy = en.fve ? x.fveSurplusDaily * 365 : 0;
+  var windEnergy = en.wind ? x.windSurplusDaily * 365 : 0;
+  // aFRR — nečerpá energii (jen je připravená)
+  // Capacity zdroje nezávislé (fve/vítr) jsou navíc, ale prochází přes baterii — počítáme.
+
+  var totalEnergyDemand = arbEnergy + evEnergy + peakEnergy + fveEnergy + windEnergy;
+  var utilizationPct = maxAnnualEnergy > 0 ? (totalEnergyDemand / maxAnnualEnergy) * 100 : 0;
+
+  // Pokud > 100 % → krácení faktor (poměrně všem zdrojům závislým na cyklech)
+  var energyScaleFactor = 1;
+  if (utilizationPct > 100) {
+    energyScaleFactor = 100 / utilizationPct;
+  }
+
+  // Aplikujeme krácení na výnosy závislé na cyklech
+  var arbitrageYear = arbitrageYearRaw * energyScaleFactor;
+  var evYearBase = evYearBaseRaw * energyScaleFactor;
+  var fveYear = fveYearRaw * energyScaleFactor;
+  var windYear = windYearRaw * energyScaleFactor;
+  // Peak shaving má svůj fixní výnos z penále, ale energie potřebná pro pokrytí špiček
+  // by se vlastně musela seškrtat — pro jednoduchost necháme peak shaving plný (priorita 1)
+  // a krátíme jen ostatní. To je realistické — peak shaving je prioritní funkce.
 
   var totalY1 = peakShavingYear + arbitrageYear + afrrYear + evYearBase + fveYear + windYear;
+
+  // Energie použitá podle segmentů (pro vizualizaci)
+  var energyBreakdown = [
+    { key: 'peak', name: 'Peak shaving', color: '#1F4A2E', kwh: peakEnergy, pct: maxAnnualEnergy > 0 ? (peakEnergy / maxAnnualEnergy) * 100 : 0 },
+    { key: 'arb', name: 'Arbitráž', color: '#3A8246', kwh: arbEnergy, pct: maxAnnualEnergy > 0 ? (arbEnergy / maxAnnualEnergy) * 100 : 0 },
+    { key: 'ev', name: 'EV nabíjení', color: '#6FA86C', kwh: evEnergy, pct: maxAnnualEnergy > 0 ? (evEnergy / maxAnnualEnergy) * 100 : 0 },
+    { key: 'fve', name: 'FVE přetoky', color: '#D4A93C', kwh: fveEnergy, pct: maxAnnualEnergy > 0 ? (fveEnergy / maxAnnualEnergy) * 100 : 0 },
+    { key: 'wind', name: 'Vítr', color: '#8B7355', kwh: windEnergy, pct: maxAnnualEnergy > 0 ? (windEnergy / maxAnnualEnergy) * 100 : 0 }
+  ].filter(function(e) { return e.kwh > 0; });
 
   var annualDeprecationSaving = x.taxApplyDepreciation ?
     (baseInvestment / 5) * (x.taxDepreciationPct / 100) : 0;
@@ -2245,7 +2572,14 @@ function compute() {
       hourlyRevenue: Math.round(totalY1 / 8760),
       annualDepreciationSaving: Math.round(annualDeprecationSaving),
       efficiencies: efficiencies,
-      enables: en
+      enables: en,
+      // Cyklus-aware
+      maxAnnualEnergy: maxAnnualEnergy,
+      totalEnergyDemand: totalEnergyDemand,
+      utilizationPct: utilizationPct,
+      energyScaleFactor: energyScaleFactor,
+      energyBreakdown: energyBreakdown,
+      maxCyclesPerYear: maxCyclesPerYear
     }
   };
 }
@@ -2881,6 +3215,101 @@ function updateLiveCounterRate(s) {
   window._currentDailyRev = s.dailyRevenue;
 }
 
+// ============ RENDER VYTÍŽENOSTI BATERIE (cyklus-aware) ============
+function renderUtilization(s) {
+  document.getElementById('util-max-energy').textContent = Math.round(s.maxAnnualEnergy).toLocaleString('cs-CZ') + ' kWh/rok';
+
+  var gaugeValue = document.getElementById('util-gauge-value');
+  var gaugeSub = document.getElementById('util-gauge-sub');
+  var util = s.utilizationPct;
+  gaugeValue.textContent = util.toFixed(0) + ' %';
+  gaugeSub.textContent = Math.round(s.totalEnergyDemand).toLocaleString('cs-CZ') + ' kWh / ' + Math.round(s.maxAnnualEnergy).toLocaleString('cs-CZ') + ' kWh';
+  if (util < 80) {
+    gaugeValue.className = 'util-gauge-value util-status-ok';
+  } else if (util < 100) {
+    gaugeValue.className = 'util-gauge-value util-status-warn';
+  } else {
+    gaugeValue.className = 'util-gauge-value util-status-bad';
+  }
+
+  // Bar segmenty
+  var bar = document.getElementById('util-bar-segments');
+  bar.innerHTML = '';
+  // Normalize tak aby šel přes 100 %
+  var maxBar = Math.max(100, util);
+  s.energyBreakdown.forEach(function(e) {
+    var seg = document.createElement('div');
+    seg.className = 'util-bar-segment';
+    seg.style.width = ((e.pct / maxBar) * 100) + '%';
+    seg.style.background = e.color;
+    seg.title = e.name + ': ' + Math.round(e.kwh).toLocaleString('cs-CZ') + ' kWh (' + e.pct.toFixed(1) + ' %)';
+    bar.appendChild(seg);
+  });
+
+  // Energy table
+  var energyTable = document.getElementById('util-energy-table');
+  energyTable.innerHTML = '';
+  s.energyBreakdown.forEach(function(e) {
+    var card = document.createElement('div');
+    card.className = 'util-energy-card';
+    card.style.borderLeftColor = e.color;
+    card.innerHTML =
+      '<div class="util-energy-name">' + e.name + '</div>' +
+      '<div class="util-energy-val">' + Math.round(e.kwh).toLocaleString('cs-CZ') + ' kWh · ' + e.pct.toFixed(1) + ' %</div>';
+    energyTable.appendChild(card);
+  });
+
+  // Varování
+  var warn = document.getElementById('util-warning');
+  warn.innerHTML = '';
+  if (util > 100) {
+    var saved = (100 / util * 100).toFixed(0);
+    warn.innerHTML =
+      '<div class="util-warning">' +
+      '<span class="util-warning-icon">⚠️</span>' +
+      '<div><strong>Vytíženost ' + util.toFixed(0) + ' % — fyzický limit překročen.</strong> Výnosy z arbitráže, EV, FVE a větru byly automaticky úměrně zkráceny na <strong>' + saved + ' %</strong> původní hodnoty (poměrné dělení dostupné energie). Peak shaving má prioritu a zůstává plný. Pro maximální výnos snižte alokace nebo zvyšte počet cyklů ročně.</div>' +
+      '</div>';
+  }
+}
+
+// ============ RENDER STICKY OFFER BAR ============
+function renderOfferBar(s) {
+  document.getElementById('offer-id').textContent = activeOffer.id;
+  document.getElementById('offer-meta').textContent = 'Zahájeno ' + fmtDate(activeOffer.startedAt);
+
+  // Ticker forward: měsíční ztráta
+  var monthlyLost = s.yearOneRevenue / 12;
+  document.getElementById('ticker-forward').textContent = fmtKcShort(monthlyLost);
+
+  // Akce: pokud je zamčeno, jiný UI
+  var actions = document.getElementById('offer-actions');
+  if (activeOffer.locked) {
+    actions.innerHTML = '<span class="offer-bar-status-locked">Uzamčeno · ' + fmtDate(activeOffer.lockedAt) + '</span>' +
+      '<button class="offer-bar-btn" onclick="newCalculation()">+ Nová kalkulace</button>';
+  } else {
+    actions.innerHTML = '<button class="offer-bar-btn" onclick="newCalculation()">+ Nová kalkulace</button>' +
+      '<button class="offer-bar-btn gold" onclick="lockAndExport()">🔒 Uzamknout a exportovat</button>';
+  }
+}
+
+// ============ TIKAJÍCÍ COUNTER V OFFER-BARU (od zahájení nabídky) ============
+function updateOfferTicker() {
+  if (!activeOffer || !window._currentDailyRev) return;
+  if (activeOffer.locked) {
+    // Po uzamčení už netiká — zobrazí konečnou hodnotu
+    var fixed = activeOffer.lostAtLock || 0;
+    document.getElementById('ticker-lost').textContent = fmtKcShort(fixed);
+    var dur = (activeOffer.lockedAt || Date.now()) - activeOffer.startedAt;
+    document.getElementById('ticker-lost-sub').textContent = 'Za ' + fmtDuration(dur) + ' (zafixováno)';
+  } else {
+    var elapsedSec = (Date.now() - activeOffer.startedAt) / 1000;
+    var lost = elapsedSec * (window._currentDailyRev / 86400);
+    document.getElementById('ticker-lost').textContent = fmtKcShort(lost);
+    document.getElementById('ticker-lost-sub').textContent = 'Za ' + fmtDuration(Date.now() - activeOffer.startedAt);
+  }
+}
+setInterval(updateOfferTicker, 1000);
+
 function renderAll() {
   var r = compute();
   var s = r.summary;
@@ -2939,6 +3368,12 @@ function renderAll() {
 
   // ============ 🅲 FOMO / WAITING COST ============
   renderWaitingCost(s);
+
+  // ============ ⚡ UTILIZATION ============
+  renderUtilization(s);
+
+  // ============ STICKY OFFER BAR ============
+  renderOfferBar(s);
 
   // Breakdown
   var breakdown = [
@@ -3021,6 +3456,110 @@ function showToast(msg, kind) {
   t.textContent = msg;
   t.className = "toast " + (kind || "success") + " show";
   setTimeout(function() { t.className = "toast " + (kind || "success"); }, 3500);
+}
+
+// ====================================================================
+// OFFER MANAGEMENT — číslo nabídky + časová značka + uzamčení
+// ====================================================================
+
+var LOCKED_OFFERS_KEY = 'bess_locked_offers';
+var ACTIVE_OFFER_KEY = 'bess_active_offer';
+
+function getLockedOffers() {
+  try {
+    return JSON.parse(localStorage.getItem(LOCKED_OFFERS_KEY) || '[]');
+  } catch (e) { return []; }
+}
+
+function lockOffer(id) {
+  var locked = getLockedOffers();
+  if (locked.indexOf(id) === -1) {
+    locked.push(id);
+    localStorage.setItem(LOCKED_OFFERS_KEY, JSON.stringify(locked));
+  }
+}
+
+function generateOfferId() {
+  var locked = getLockedOffers();
+  var maxTries = 50;
+  for (var i = 0; i < maxTries; i++) {
+    var year = new Date().getFullYear();
+    var seq = Math.floor(Math.random() * 900) + 100;
+    var hashNum = Math.floor(Math.random() * 0xFFFF);
+    var hash = hashNum.toString(16).toUpperCase();
+    while (hash.length < 4) hash = '0' + hash;
+    var id = 'BESS-' + year + '-' + seq + '-' + hash;
+    if (locked.indexOf(id) === -1) return id;
+  }
+  return 'BESS-' + Date.now();
+}
+
+function getOrCreateActiveOffer() {
+  try {
+    var saved = JSON.parse(localStorage.getItem(ACTIVE_OFFER_KEY) || 'null');
+    var locked = getLockedOffers();
+    if (saved && saved.id && locked.indexOf(saved.id) === -1) {
+      return saved;
+    }
+  } catch (e) {}
+  var fresh = {
+    id: generateOfferId(),
+    startedAt: Date.now(),
+    locked: false
+  };
+  localStorage.setItem(ACTIVE_OFFER_KEY, JSON.stringify(fresh));
+  return fresh;
+}
+
+var activeOffer = getOrCreateActiveOffer();
+
+function newCalculation() {
+  if (!confirm('Začít novou kalkulaci? Aktuální číslo ' + activeOffer.id + ' se zachová pro pozdější použití, ale spustí se nové počítání ztráty od nuly.')) return;
+  activeOffer = {
+    id: generateOfferId(),
+    startedAt: Date.now(),
+    locked: false
+  };
+  localStorage.setItem(ACTIVE_OFFER_KEY, JSON.stringify(activeOffer));
+  renderAll();
+  showToast("Nová kalkulace · " + activeOffer.id, "success");
+}
+
+function lockAndExport() {
+  if (!confirm('Uzamknout kalkulaci ' + activeOffer.id + ' a exportovat do PDF?\n\nPo uzamčení už toto číslo nelze znovu použít — nová kalkulace dostane nové číslo. Tikající ztráta od zahájení se zafixuje.')) return;
+  lockOffer(activeOffer.id);
+  activeOffer.locked = true;
+  activeOffer.lockedAt = Date.now();
+  var r = compute();
+  activeOffer.lostAtLock = (Date.now() - activeOffer.startedAt) / 1000 * (r.summary.yearOneRevenue / (365 * 24 * 3600));
+  activeOffer.dailyRevAtLock = r.summary.dailyRevenue;
+  activeOffer.yearOneRevAtLock = r.summary.yearOneRevenue;
+  localStorage.setItem('bess_last_lock', JSON.stringify(activeOffer));
+  showToast("Uzamknuto · " + activeOffer.id + " · připravuji PDF…", "success");
+  renderAll();
+  setTimeout(function() { window.print(); }, 600);
+  setTimeout(function() {
+    localStorage.removeItem(ACTIVE_OFFER_KEY);
+    activeOffer = getOrCreateActiveOffer();
+    renderAll();
+  }, 1500);
+}
+
+function fmtDuration(ms) {
+  var s = Math.floor(ms / 1000);
+  var d = Math.floor(s / 86400);
+  var h = Math.floor((s % 86400) / 3600);
+  var m = Math.floor((s % 3600) / 60);
+  if (d > 0) return d + " " + (d === 1 ? 'den' : (d < 5 ? 'dny' : 'dní')) + " " + h + " h " + m + " min";
+  if (h > 0) return h + " h " + m + " min";
+  return m + " min " + (s % 60) + " s";
+}
+
+function fmtDate(ms) {
+  var dt = new Date(ms);
+  var pad = function(n) { return n < 10 ? '0' + n : n; };
+  return pad(dt.getDate()) + '.' + pad(dt.getMonth() + 1) + '.' + dt.getFullYear() +
+    ' v ' + pad(dt.getHours()) + ':' + pad(dt.getMinutes());
 }
 
 // ============ EXPORT DO PDF (přes prohlížeč) ============
